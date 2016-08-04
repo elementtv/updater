@@ -109,14 +109,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     protected boolean isLicensed() {
-        return (Build.PRODUCT.equals("stvm8") &&
-                Build.DEVICE.equals("stvm8") &&
-                Build.BOARD.equals("stvm8")) ||
-                Build.MODEL.equals("Skystream X4") ||
-                Build.MODEL.equals("SkystreamX X4") ||
-                Build.MODEL.equals("Skystream X2")
-                || Build.MODEL.equals("Skystream One")
-                || BuildConfig.DEBUG;
+        return (Build.MODEL.equals("Element-Ti4") ||
+                Build.MODEL.equals("Element-Ti5")
+                || BuildConfig.DEBUG);
     }
 
     protected void enableButtons() {
