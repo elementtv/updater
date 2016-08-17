@@ -16,7 +16,8 @@ import org.kohsuke.github.GHRepository;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelper.GitHubTask<App> {
+@SuppressWarnings("unchecked")
+public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelper.GitHubTask {
     protected Context context;
     protected String failure_reason;
     protected App kodi;
@@ -85,11 +86,6 @@ public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelp
     }
 
     @Override
-    public void contextDestroyed() {
-        this.context = null;
-    }
-
-    @Override
     public void onCancelled() {
         Log.d("AppLoader", "Call AppsLoader.onCancelled()");
         GitHubHelper.GitHubCallbacks<App> github_callbacks = (GitHubHelper.GitHubCallbacks<App>) context;
@@ -103,5 +99,10 @@ public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelp
         GitHubHelper.GitHubCallbacks<App> github_callbacks = (GitHubHelper.GitHubCallbacks<App>) context;
         if (github_callbacks != null)
             github_callbacks.onPostExecute(result);
+    }
+
+    @Override
+    public void contextDestroyed() {
+        context = null;
     }
 }

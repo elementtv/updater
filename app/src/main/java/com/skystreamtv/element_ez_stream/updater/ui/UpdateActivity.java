@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,19 +22,37 @@ import com.skystreamtv.element_ez_stream.updater.background.PlayerUpdaterService
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
-public class UpdateActivity extends AppCompatActivity implements PlayerUpdaterActivity, ServiceConnection {
+public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivity, ServiceConnection {
 
     private static final String TAG = "UpdateActivity";
-
-    protected Messenger service_messenger = null;
-    protected boolean is_service_bound;
-
-    private TextView statusMessageTextView;
-    private ProgressBar updateProgressBar;
-    private Button retryButton;
-
     private static final String RETRY = "retry", TITLE = "title", STATE_TEXT = "state_text",
             PROGRESS = "progress";
+    protected Messenger service_messenger = null;
+    protected boolean is_service_bound;
+    private TextView statusMessageTextView;
+    private ProgressBar updateProgressBar;
+    protected final Messenger update_activity_messenger = new Messenger(new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case PlayerUpdaterService.MSG_UPDATE_READY:
+                    hideRetryButton();
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_PROGRESS:
+                    updateProgressBarPercent(msg.arg1);
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_CANCELLED:
+                    updateCancelled(msg);
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_COMPLETED:
+                    updateDone();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    });
+    private Button retryButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +104,6 @@ public class UpdateActivity extends AppCompatActivity implements PlayerUpdaterAc
         }
     }
 
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(TITLE, (String)getTitle());
@@ -118,28 +134,6 @@ public class UpdateActivity extends AppCompatActivity implements PlayerUpdaterAc
         bindService(service_intent, this, BIND_AUTO_CREATE);
         is_service_bound = true;
     }
-
-    protected final Messenger update_activity_messenger = new Messenger(new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case PlayerUpdaterService.MSG_UPDATE_READY:
-                    hideRetryButton();
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_PROGRESS:
-                    updateProgressBarPercent(msg.arg1);
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_CANCELLED:
-                    updateCancelled(msg);
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_COMPLETED:
-                    updateDone();
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    });
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -182,7 +176,7 @@ public class UpdateActivity extends AppCompatActivity implements PlayerUpdaterAc
         statusMessageTextView.setText(text);
     }
 
-    protected void showErrorDialog(final String title, final String message) {
+    protected void errorDialog(final String title, final String message) {
         AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
         error_dialog.show();
     }
@@ -231,14 +225,13 @@ public class UpdateActivity extends AppCompatActivity implements PlayerUpdaterAc
     }
 
     protected void updateDone() {
-        Intent finish_intent = new Intent(getApplicationContext(), DisclaimerActivity.class);
-        finish_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        finish_intent.putExtra("EXIT", true);
-        startActivity(finish_intent);
+        Log.d("UpdateInfo", "Update Done");
+        setResult(RESULT_OK);
+        finish();
     }
 
     protected void showFailure(String failure_reason) {
-        showErrorDialog(getResources().getString(R.string.download_error), failure_reason);
+        errorDialog(getResources().getString(R.string.download_error), failure_reason);
         setStatusText(getResources().getString(R.string.update_failed));
         Button retryButton = (Button) findViewById(R.id.retryButton);
         retryButton.setVisibility(View.VISIBLE);

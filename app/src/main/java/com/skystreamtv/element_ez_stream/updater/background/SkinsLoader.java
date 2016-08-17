@@ -17,13 +17,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implements GitHubHelper.GitHubTask<ArrayList<Skin>> {
+@SuppressWarnings("unchecked")
+public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implements GitHubHelper.GitHubTask {
 
+    protected static final int MAX_KINS = 2;
     private static final String TAG = "SkinsLoader";
-
     protected Context context;
     protected String failure_reason;
-    protected static final int MAX_KINS = 2;
+    private boolean hasRun = false;
 
     public SkinsLoader(Context context) {
         if (BuildConfig.DEBUG && !(context instanceof GitHubHelper.GitHubCallbacks))
@@ -32,8 +33,13 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
         failure_reason = null;
     }
 
+    public boolean hasRun() {
+        return hasRun;
+    }
+
     @Override
     protected ArrayList<Skin> doInBackground(Void... params) {
+        hasRun = true;
         Log.d(TAG, "Running GitHub Task");
         Resources resources;
         try {
@@ -54,17 +60,22 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
             int i = 0;
             reader.beginArray();
             while (i < MAX_KINS && reader.hasNext()) {
+                int id = -1;
                 String name = null;
                 String description = null;
                 String screenshot_url = null;
                 String brand_url = null;
                 int version = -1;
+                String details = null;
                 Log.d(TAG, "Start reading JSON object");
                 reader.beginObject();
 
                 while (reader.hasNext()) {
                     String key = reader.nextName();
                     switch (key) {
+                        case "id":
+                            id = reader.nextInt();
+                            break;
                         case "name":
                             name = reader.nextString();
                             break;
@@ -80,13 +91,16 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                         case "version":
                             version = reader.nextInt();
                             break;
+                        case "update_details":
+                            details = reader.nextString();
+                            break;
                         default:
                             reader.skipValue();
                     }
                 }
                 reader.endObject();
                 i++;
-                list.add(new Skin(screenshot_url, name, description, brand_url, true, version));
+                list.add(new Skin(id, screenshot_url, name, description, brand_url, true, version, details));
             }
             if (!reader.hasNext())
                 reader.endArray();
@@ -104,13 +118,6 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
     }
 
     @Override
-    public void contextDestroyed() {
-        this.context = null;
-    }
-
-
-
-    @Override
     public void onCancelled() {
         Log.d("PlayerUpdater", "Call SkinsLoader.onCancelled()");
         GitHubHelper.GitHubCallbacks<ArrayList<Skin>> github_callbacks = (GitHubHelper.GitHubCallbacks<ArrayList<Skin>>) context;
@@ -124,5 +131,10 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
         GitHubHelper.GitHubCallbacks<ArrayList<Skin>> github_callbacks = (GitHubHelper.GitHubCallbacks<ArrayList<Skin>>) context;
         if (github_callbacks != null)
             github_callbacks.onPostExecute(result);
+    }
+
+    @Override
+    public void contextDestroyed() {
+        this.context = null;
     }
 }

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 
+@SuppressWarnings("unused")
 public class Dialogs {
 
     public static AlertDialog buildErrorDialog(Context context, String title, String message, final int action) {

@@ -16,29 +16,57 @@ public class Skin implements Parcelable{
             return new Skin[size];
         }
     };
+
+    private int id;
     private String screenshot_url;
     private String name;
     private String description;
     private String download_url;
     private boolean enabled;
     private int version;
+    private boolean upToDate;
+    private boolean installed;
+    private String details;
 
-    public Skin(String screenshot_url, String name, String description, String download_url, boolean enabled, int version) {
+    public Skin(int id, String screenshot_url, String name, String description, String download_url, boolean enabled, int version, String details) {
+        this.id = id;
         this.screenshot_url = screenshot_url;
         this.name = name;
         this.description = description;
         this.download_url = download_url;
         this.enabled = enabled;
         this.version = version;
+        this.details = details;
+    }
+
+    public Skin(int id, String name, int version) {
+        this.id = id;
+        this.name = name;
+        this.version = version;
+    }
+
+    public Skin() {
     }
 
     protected Skin(Parcel in) {
+        id = in.readInt();
         screenshot_url = in.readString();
         name = in.readString();
         description = in.readString();
         download_url = in.readString();
         enabled = in.readInt() != 0;
         version = in.readInt();
+        upToDate = in.readInt() != 0;
+        installed = in.readInt() != 0;
+        details = in.readString();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getDownloadUrl() {
@@ -49,12 +77,20 @@ public class Skin implements Parcelable{
         return version;
     }
 
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
     public String getScreenshotUrl() {
         return screenshot_url;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -65,6 +101,26 @@ public class Skin implements Parcelable{
         return enabled;
     }
 
+    public boolean isUpToDate() {
+        return upToDate;
+    }
+
+    public void setUpToDate(boolean upToDate) {
+        this.upToDate = upToDate;
+    }
+
+    public boolean isInstalled() {
+        return installed;
+    }
+
+    public void setInstalled(boolean installed) {
+        this.installed = installed;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -72,17 +128,26 @@ public class Skin implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
         dest.writeString(screenshot_url);
         dest.writeString(name);
         dest.writeString(description);
         dest.writeString(download_url);
         dest.writeInt(enabled ? 1 : 0);
         dest.writeInt(version);
+        dest.writeInt(upToDate ? 1 : 0);
+        dest.writeInt(installed ? 1 : 0);
+        dest.writeString(details);
     }
 
     @Override
     public String toString() {
-        return getDescription();
+        return "Skin{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", version=" + version +
+                '}';
     }
 }
 

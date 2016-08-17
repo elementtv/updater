@@ -92,12 +92,6 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
 
     }
 
-    static class ListViewHolder {
-        NetworkImageView skinScreenShotImageView;
-        TextView skinNameTextView;
-        TextView skinDescriptionTextView;
-    }
-
     protected void setListAdapter(final List<Skin> skinList) {
         Log.d(TAG, "Call SkinsActivity.setListAdapter()");
         if (skins == null) {
@@ -210,13 +204,13 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
         previously_selected_list_item = listItem;
         Skin selectedSkin = skins.getSkins().get(position);
         if (player_installer.isPlayerInstalled()) {
-            if (!player_installer.isPlayerUpToDate(selectedSkin)) {
+            if (!player_installer.isSkinUpToDate(selectedSkin)) {
                 Intent updateIntent = new Intent(this, UpdateActivity.class);
                 updateIntent.putExtra(Constants.SERVICE_RESET, true);
                 updateIntent.putExtra(Constants.SKINS, selectedSkin);
                 startActivity(updateIntent);
             } else {
-                player_installer.launchPlayer(getIntent().getBooleanExtra(Constants.PLAYER_INSTALLED, false));
+                player_installer.launchPlayer();
                 finish();
             }
         } else {
@@ -225,5 +219,11 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
                             resources.getString(R.string.player_name)));
             previously_selected_list_item.setBackgroundColor(Color.TRANSPARENT);
         }
+    }
+
+    static class ListViewHolder {
+        NetworkImageView skinScreenShotImageView;
+        TextView skinNameTextView;
+        TextView skinDescriptionTextView;
     }
 }

@@ -15,3 +15,12 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-verbose
+-keepattributes *Annotation*
+-libraryjars /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+-keepclasseswithmembers class org.kohsuke.github.** { *; }
+-keepnames class com.fasterxml.jackson.** { *; }
+-keepnames interface com.fasterxml.jackson.** { *; }
+-dontwarn edu.umd.cs.**
+-dontwarn org.kohsuke.github.**

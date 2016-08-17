@@ -1,11 +1,16 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,13 +30,17 @@ import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_INSTALLED;
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SKINS;
 
-public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity, GitHubHelper.GitHubCallbacks<Object> {
+
+public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity, GitHubHelper.GitHubCallbacks<List<Skin>> {
 
     private static final String TAG = "DisclaimerActivity";
     protected PlayerInstaller playerInstaller;
@@ -40,34 +49,82 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     protected AppsLoader appsLoader;
     Button nextButton;
     TextView playerInstallTextView;
-    private int selection;
     private boolean kodiInstalled;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getIntent().getBooleanExtra(Constants.EXIT, false))
+        if (getIntent().getBooleanExtra(EXIT, false))
             finish();
         setContentView(R.layout.activity_disclaimer);
 
-        nextButton = (Button) findViewById(R.id.nextButton);
-        playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
-
-        setTitle(String.format(getString(R.string.disclaimer_activity_title),
-                getString(R.string.app_name)));
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this);
         appsLoader = new AppsLoader(this);
         progressDialog = new ProgressDialog(this);
+
+        nextButton = (Button) findViewById(R.id.nextButton);
+        playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setCancelable(true)
+                    .setTitle(R.string.external_storage_title)
+                    .setMessage(R.string.external_storage_info)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ActivityCompat.requestPermissions(DisclaimerActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    PERMISSIONS_REQUEST);
+                        }
+                    }).create();
+            dialog.show();
+        } else {
+            completeSetup();
+        }
+    }
+
+    private void completeSetup() {
+
+        setTitle(String.format(getString(R.string.disclaimer_activity_title),
+                getString(R.string.app_name)));
+
         progressDialog.setMessage(getString(R.string.loading));
 
+        kodiInstalled = playerInstaller.isPlayerInstalled();
+        if (!kodiInstalled) {
+            playerInstallTextView.setText(String.format(getString(R.string.player_not_installed_message),
+                    getString(R.string.player_name)));
+            nextButton.setText(R.string.install_player);
+        } else {
+            playerInstallTextView.setText("");
+            nextButton.setText(R.string.continue_button);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                completeSetup();
+            } else {
+                AlertDialog dialog = Dialogs.buildErrorDialog(this, getString(R.string.external_storage_title),
+                        getString(R.string.external_storage_required), ERROR_ACTION_CLOSE_APP);
+                dialog.show();
+            }
+        }
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
         if (isLicensed()) {
             enableButtons();
             if (Connectivity.isConnectionAvailable(this)) {
                 checkForUpdates();
             } else {
                 AlertDialog noConnection = Dialogs.buildErrorDialog(this,
-                        "No Internet", "An internet connection is required to use this application", ERROR_ACTION_NO_ACTION);
+                        getString(R.string.no_internet_title), getString(R.string.no_internet_info), ERROR_ACTION_NO_ACTION);
                 noConnection.show();
             }
         } else {
@@ -87,7 +144,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             public void onCheckComplete(final App update) {
                 if (BuildConfig.VERSION_CODE < update.getVersion()) {
                     AlertDialog.Builder dialog_builder = new AlertDialog.Builder(DisclaimerActivity.this);
-                    String message = "A new version of the Updater Application is available. Would you like to update now?";
+                    String message = getString(R.string.new_version_app_info);
                     dialog_builder.setTitle(R.string.update_available)
                             .setMessage(message)
                             .setIcon(android.R.drawable.ic_dialog_alert)
@@ -111,26 +168,12 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     protected boolean isLicensed() {
         return (Build.MODEL.equals("Element-Ti4") ||
                 Build.MODEL.equals("Element-Ti5")
+                || Build.MODEL.equals("Element-Ti8")
                 || BuildConfig.DEBUG);
     }
 
     protected void enableButtons() {
         nextButton.setEnabled(true);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        kodiInstalled = playerInstaller.isPlayerInstalled();
-        if (!kodiInstalled) {
-            playerInstallTextView.setText(String.format(getString(R.string.player_not_installed_message),
-                    getString(R.string.player_name)));
-            nextButton.setText(R.string.install_player);
-        } else {
-            playerInstallTextView.setText("");
-            nextButton.setText(R.string.continue_button);
-        }
     }
 
     @Override
@@ -180,6 +223,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
     protected void updateOrLaunchPlayer() {
         progressDialog.show();
+        if (skinsLoader.hasRun()) {
+            skinsLoader = new SkinsLoader(this);
+        }
         skinsLoader.execute();
     }
 
@@ -191,53 +237,19 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     @Override
-    public void onPostExecute(Object result) {
+    public void onPostExecute(List<Skin> result) {
         Log.d(TAG, "Call DisclaimerActivity.onPostExecute()");
         progressDialog.dismiss();
-        @SuppressWarnings("unchecked")
-        ArrayList<Skin> skins = (ArrayList<Skin>) result;
-        final List<Skin> needsUpdate = new ArrayList<>();
-        for (Skin each : skins) {
-            if (!playerInstaller.isPlayerUpToDate(each)) needsUpdate.add(each);
+        ArrayList<Skin> skins = new ArrayList<>();
+        for (Skin each : result) {
+            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
+            each.setInstalled(playerInstaller.isSkinInstalled(each));
+            skins.add(each);
         }
 
-        if (needsUpdate.isEmpty()) {
-            playerInstaller.launchPlayer(getIntent().getBooleanExtra(Constants.PLAYER_INSTALLED, false));
-            finish();
-        } else {
-            CharSequence[] descriptions = new CharSequence[needsUpdate.size()];
-            for (int i = 0; i < needsUpdate.size(); i++) {
-                descriptions[i] = needsUpdate.get(i).getDescription();
-            }
-
-            selection = 0;
-            AlertDialog.Builder dialog_builder = new AlertDialog.Builder(DisclaimerActivity.this);
-            dialog_builder.setTitle(R.string.continue_with_update)
-                    .setSingleChoiceItems(descriptions, 0, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            selection = i;
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setNegativeButton(R.string.use_current_version, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            playerInstaller.launchPlayer(getIntent().getBooleanExtra(Constants.PLAYER_INSTALLED, false));
-                            finish();
-                        }
-                    }).setPositiveButton(R.string.install_update, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    doUpdate(needsUpdate.get(selection));
-                }
-            }).show();
-        }
-    }
-
-    private void doUpdate(Skin selected_skin) {
-        Intent update_intent = new Intent(this, UpdateActivity.class);
-        update_intent.putExtra(Constants.SERVICE_RESET, true);
-        update_intent.putExtra(Constants.SKINS, selected_skin);
-        startActivity(update_intent);
+        Intent intent = new Intent(DisclaimerActivity.this, UpdateAvailableActivity.class);
+        intent.putExtra(SKINS, skins);
+        intent.putExtra(PLAYER_INSTALLED, getIntent().getBooleanExtra(PLAYER_INSTALLED, false));
+        startActivity(intent);
     }
 }

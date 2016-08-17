@@ -4,7 +4,19 @@ package com.skystreamtv.element_ez_stream.updater.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+@SuppressWarnings("unused")
 public class App implements Parcelable {
+    public static final Creator<App> CREATOR = new Creator<App>() {
+        @Override
+        public App createFromParcel(Parcel in) {
+            return new App(in);
+        }
+
+        @Override
+        public App[] newArray(int size) {
+            return new App[size];
+        }
+    };
     private String icon_url;
     private String name;
     private String description;
@@ -34,64 +46,52 @@ public class App implements Parcelable {
         version = in.readInt();
     }
 
-    public static final Creator<App> CREATOR = new Creator<App>() {
-        @Override
-        public App createFromParcel(Parcel in) {
-            return new App(in);
-        }
-
-        @Override
-        public App[] newArray(int size) {
-            return new App[size];
-        }
-    };
+    public String getDownloadUrl() {
+        return download_url;
+    }
 
     public void setDownloadUrl(String url) {
         download_url = url;
-    }
-
-    public void setVersion(int v) {
-        version = v;
-    }
-
-    public void setIconUrl(String url) {
-        icon_url = url;
-    }
-
-    public void setName(String n) {
-        name = n;
-    }
-
-    public void setDescription(String d) {
-        description = d;
-    }
-
-    public void setEnabled(boolean e) {
-        enabled = e;
-    }
-
-    public String getDownloadUrl() {
-        return download_url;
     }
 
     public int getVersion() {
         return version;
     }
 
+    public void setVersion(int v) {
+        version = v;
+    }
+
     public String getIconUrl() {
         return icon_url;
+    }
+
+    public void setIconUrl(String url) {
+        icon_url = url;
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String n) {
+        name = n;
+    }
+
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String d) {
+        description = d;
+    }
+
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public void setEnabled(boolean e) {
+        enabled = e;
     }
 
     @Override

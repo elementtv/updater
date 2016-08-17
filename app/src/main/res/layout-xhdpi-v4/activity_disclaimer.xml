@@ -21,13 +21,12 @@
         android:src="@drawable/inner" />
 
     <TextView
-        android:id="@+id/welcomeTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/welcome_text"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-        android:textColor="@color/primary_dark_material_dark" />
+        android:textColor="@color/primaryDarkMaterialDark" />
 
     <TextView
         android:id="@+id/playerInstallTextView"

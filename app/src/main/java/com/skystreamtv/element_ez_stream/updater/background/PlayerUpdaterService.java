@@ -21,7 +21,6 @@ import android.util.Log;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.io.File;
@@ -34,15 +33,13 @@ import java.util.zip.ZipInputStream;
 
 public class PlayerUpdaterService extends IntentService {
 
-    private static final String TAG = "PlayerUpdaterService";
-
     public static final int MSG_REGISTER_CLIENT = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
     public static final int MSG_UPDATE_READY = 3;
     public static final int MSG_UPDATE_PROGRESS = 4;
     public static final int MSG_UPDATE_CANCELLED = 5;
     public static final int MSG_UPDATE_COMPLETED = 6;
-
+    private static final String TAG = "PlayerUpdaterService";
     protected DownloadManager download_manager;
     protected long download_id;
     protected Skin skin;
@@ -64,6 +61,7 @@ public class PlayerUpdaterService extends IntentService {
             }
         }
     });
+    protected int old_progress = 0;
 
     public PlayerUpdaterService() {
         super("MadCastService");
@@ -97,21 +95,19 @@ public class PlayerUpdaterService extends IntentService {
         updateReady();
         this.download_manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
-        Log.d(TAG, "PLAYER_CONF_DIRECTORY: " + PLAYER_CONF_DIRECTORY.getAbsolutePath());
         this.skin = intent.getParcelableExtra(Constants.SKINS);
         service_status = Status.RUNNING;
-        boolean result = doUpdate();
+        doUpdate();
         if (service_status == Status.CANCELED)
             updateCancelled();
         else {
-            updateCompleted(result);
+            updateCompleted();
             service_status = Status.FINISHED;
         }
         wakeLock.release();
         stopSelf();
     }
 
-    protected int old_progress = 0;
     protected void publishProgress(final int progress) {
         try {
             // Avoid overloading the message queue
@@ -151,12 +147,7 @@ public class PlayerUpdaterService extends IntentService {
         sendCallbackMessage(msg);
     }
 
-    protected void updateCompleted(Boolean updated) {
-        Log.d(TAG, "PlayerUpdaterService.updateCompleted()");
-        if (updated) {
-            PlayerInstaller player_installer = new PlayerInstaller(this);
-            player_installer.launchPlayer(true);
-        }
+    protected void updateCompleted() {
         sendCallbackMessage(Message.obtain(null, MSG_UPDATE_COMPLETED));
     }
 
@@ -300,7 +291,7 @@ public class PlayerUpdaterService extends IntentService {
             query.setFilterById(download_id);
             Cursor cursor = download_manager.query(query);
             cursor.moveToFirst();
-            String zipFilePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+            @SuppressWarnings("deprecation") String zipFilePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
             Log.d(TAG, "Opening zip file stream: " + zipFilePath);
             File zip_file = new File(zipFilePath);
             ZipInputStream zip_stream = new ZipInputStream(new FileInputStream(zip_file));
@@ -382,6 +373,8 @@ public class PlayerUpdaterService extends IntentService {
         try {
             JsonWriter writer = new JsonWriter(new FileWriter(new File(PLAYER_CONF_DIRECTORY, "updater.inf")));
             writer.beginObject();
+            writer.name("id");
+            writer.value(skin.getId());
             writer.name("skin_name");
             writer.value(skin.getName());
             writer.name("version");

@@ -3,6 +3,7 @@ package com.skystreamtv.element_ez_stream.updater.model;
 import java.io.Serializable;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class Skins implements Serializable {
 
     private static final long serialVersionUID = 1L;
