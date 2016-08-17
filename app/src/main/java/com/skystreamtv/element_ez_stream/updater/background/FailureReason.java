@@ -6,16 +6,6 @@ import android.os.Parcelable;
 
 public class FailureReason implements Parcelable{
 
-    protected String failure_reason = "";
-
-    public FailureReason(String failure_reason) {
-        this.failure_reason = failure_reason;
-    }
-
-    protected FailureReason(Parcel in) {
-        this.failure_reason = in.readString();
-    }
-
     public static final Creator<FailureReason> CREATOR = new Creator<FailureReason>() {
         @Override
         public FailureReason createFromParcel(Parcel in) {
@@ -27,6 +17,15 @@ public class FailureReason implements Parcelable{
             return new FailureReason[size];
         }
     };
+    private String failure_reason = "";
+
+    public FailureReason(String failure_reason) {
+        this.failure_reason = failure_reason;
+    }
+
+    protected FailureReason(Parcel in) {
+        this.failure_reason = in.readString();
+    }
 
     @Override
     public int describeContents() {

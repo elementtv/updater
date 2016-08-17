@@ -8,8 +8,8 @@ import android.content.IntentFilter;
  */
 public class BroadcastUtil {
 
-    public static final String STOP = BroadcastUtil.class.getSimpleName() + ".STOP";
-    public static final String ERROR = BroadcastUtil.class.getSimpleName() + ".ERROR";
+    private static final String STOP = BroadcastUtil.class.getSimpleName() + ".STOP";
+    private static final String ERROR = BroadcastUtil.class.getSimpleName() + ".ERROR";
 
     public static Intent stop() {
         return new Intent(STOP);

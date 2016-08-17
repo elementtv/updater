@@ -18,9 +18,8 @@ import java.io.InputStreamReader;
 
 @SuppressWarnings("unchecked")
 public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelper.GitHubTask {
-    protected Context context;
-    protected String failure_reason;
-    protected App kodi;
+    private Context context;
+    private String failure_reason;
 
     public AppsLoader(Context context) {
         if (BuildConfig.DEBUG && !(context instanceof GitHubHelper.GitHubCallbacks))
@@ -31,6 +30,7 @@ public class AppsLoader extends AsyncTask<Void, Void, App> implements GitHubHelp
 
     @Override
     protected App doInBackground(Void... params) {
+        App kodi = new App();
         Log.d("AppLoader", "Running GitHub Task");
         Resources resources;
         try {

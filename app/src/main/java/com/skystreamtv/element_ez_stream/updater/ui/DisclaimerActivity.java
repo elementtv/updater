@@ -43,12 +43,12 @@ import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SKINS;
 public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity, GitHubHelper.GitHubCallbacks<List<Skin>> {
 
     private static final String TAG = "DisclaimerActivity";
-    protected PlayerInstaller playerInstaller;
-    protected ProgressDialog progressDialog;
-    protected SkinsLoader skinsLoader;
-    protected AppsLoader appsLoader;
-    Button nextButton;
-    TextView playerInstallTextView;
+    private PlayerInstaller playerInstaller;
+    private ProgressDialog progressDialog;
+    private SkinsLoader skinsLoader;
+    private AppsLoader appsLoader;
+    private Button nextButton;
+    private TextView playerInstallTextView;
     private boolean kodiInstalled;
 
     @Override
@@ -165,14 +165,14 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         });
     }
 
-    protected boolean isLicensed() {
+    private boolean isLicensed() {
         return (Build.MODEL.equals("Element-Ti4") ||
                 Build.MODEL.equals("Element-Ti5")
                 || Build.MODEL.equals("Element-Ti8")
                 || BuildConfig.DEBUG);
     }
 
-    protected void enableButtons() {
+    private void enableButtons() {
         nextButton.setEnabled(true);
     }
 
@@ -221,7 +221,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         }
     }
 
-    protected void updateOrLaunchPlayer() {
+    private void updateOrLaunchPlayer() {
         progressDialog.show();
         if (skinsLoader.hasRun()) {
             skinsLoader = new SkinsLoader(this);
