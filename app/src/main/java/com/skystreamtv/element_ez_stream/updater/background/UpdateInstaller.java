@@ -8,6 +8,8 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
+import com.skystreamtv.element_ez_stream.updater.R;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -30,7 +32,7 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
     protected void onPreExecute() {
         super.onPreExecute();
         progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage("Installing Updates. Please wait...");
+        progressDialog.setMessage(context.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setCancelable(false);

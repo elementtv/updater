@@ -20,7 +20,6 @@ import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.BuildConfig;
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.AppsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
@@ -46,7 +45,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private PlayerInstaller playerInstaller;
     private ProgressDialog progressDialog;
     private SkinsLoader skinsLoader;
-    private AppsLoader appsLoader;
     private Button nextButton;
     private TextView playerInstallTextView;
     private boolean kodiInstalled;
@@ -60,7 +58,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this);
-        appsLoader = new AppsLoader(this);
         progressDialog = new ProgressDialog(this);
 
         nextButton = (Button) findViewById(R.id.nextButton);

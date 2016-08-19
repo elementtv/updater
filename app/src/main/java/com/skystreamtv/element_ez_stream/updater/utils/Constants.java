@@ -17,4 +17,8 @@ public class Constants {
 
     public static final int SKIN_UPDATE = 1001;
     public static final int PERMISSIONS_REQUEST = 1002;
+
+    //element files
+    public static final String UPDATE_JSON_FILE = "/element_update.json";
+    public static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
 }

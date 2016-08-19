@@ -72,4 +72,7 @@
     <string name="no_internet_title">No Internet</string>
     <string name="no_internet_info">An internet connection is required to use this application</string>
     <string name="new_version_app_info">A new version of the Updater Application is available. Would you like to update now?</string>
+    <string name="please_wait">Installing Updates. Please wait…</string>
+    <string name="checking_for_updates">Checking for updates. Please wait…</string>
+    <string name="installing_kodi">Installing Kodi. Please wait…</string>
 </resources>

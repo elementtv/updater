@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.model.App;
 
@@ -39,7 +40,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     protected void onPreExecute() {
         super.onPreExecute();
         progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage("Installing Kodi. Please wait...");
+        progressDialog.setMessage(context.getString(R.string.installing_kodi));
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setCancelable(false);
@@ -63,7 +64,6 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     @Override
     protected Void doInBackground(Void... app) {
         try {
-
             App kodi = new App();
             Log.d(TAG, "Get GitHub Repo");
             GHRepository repository = GitHubHelper.connectRepository(context.getResources());

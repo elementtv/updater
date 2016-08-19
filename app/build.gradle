@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.skystreamtv.element_ez_stream.updater"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 24
         versionCode 9
         versionName "1.0"

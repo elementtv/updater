@@ -6,7 +6,9 @@ import android.os.AsyncTask;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.App;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -25,10 +27,6 @@ public class Updater extends AsyncTask<Void, Integer, App> {
         this.context = context;
     }
 
-    public interface UpdateListener {
-        void onCheckComplete(App update);
-    }
-
     public void setListener(UpdateListener listener) {
         this.listener = listener;
     }
@@ -37,7 +35,7 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     protected void onPreExecute() {
         super.onPreExecute();
         progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage("Checking for updates. Please wait...");
+        progressDialog.setMessage(context.getString(R.string.checking_for_updates));
         progressDialog.setIndeterminate(true);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
@@ -65,7 +63,7 @@ public class Updater extends AsyncTask<Void, Integer, App> {
         try {
             App update = new App();
             GHRepository repository = GitHubHelper.connectRepository(context.getResources());
-            GHContent content = repository.getFileContent("/element_update.json");
+            GHContent content = repository.getFileContent(Constants.UPDATE_JSON_FILE);
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             reader.beginObject();
 
@@ -93,5 +91,9 @@ public class Updater extends AsyncTask<Void, Integer, App> {
         }
 
         return null;
+    }
+
+    public interface UpdateListener {
+        void onCheckComplete(App update);
     }
 }
