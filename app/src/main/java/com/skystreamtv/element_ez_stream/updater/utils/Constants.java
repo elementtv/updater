@@ -13,6 +13,7 @@ public class Constants {
     public static final String SERVICE_RESET = "SERVICE_RESET";
     public static final String SKINS = "skins";
     public static final String PLAYER_INSTALLED = "PLAYER_INSTALLED";
+    public static final String CHECK_FOR_UPDATES = "checkForUpdates";
 
 
     public static final int SKIN_UPDATE = 1001;

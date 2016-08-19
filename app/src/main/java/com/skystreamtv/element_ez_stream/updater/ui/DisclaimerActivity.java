@@ -29,6 +29,7 @@ import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,12 +118,16 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         super.onPostResume();
         if (isLicensed()) {
             enableButtons();
-            if (Connectivity.isConnectionAvailable(this)) {
-                checkForUpdates();
-            } else {
-                AlertDialog noConnection = Dialogs.buildErrorDialog(this,
-                        getString(R.string.no_internet_title), getString(R.string.no_internet_info), ERROR_ACTION_NO_ACTION);
-                noConnection.show();
+            boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
+            if (checkForUpdates) {
+                if (Connectivity.isConnectionAvailable(this)) {
+                    getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
+                    checkForUpdates();
+                } else {
+                    AlertDialog noConnection = Dialogs.buildErrorDialog(this,
+                            getString(R.string.no_internet_title), getString(R.string.no_internet_info), ERROR_ACTION_NO_ACTION);
+                    noConnection.show();
+                }
             }
         } else {
             AlertDialog licenseErrorDialog = Dialogs.buildErrorDialog(this,
