@@ -73,16 +73,18 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
                     @Override
                     public void onClick(View view, int position) {
                         final Skin skin = skins.get(position);
-                        dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
-                                .setTitle(R.string.update_details)
-                                .setMessage(skin.getDetails())
-                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                })
-                                .show();
+                        if (skin.isInstalled() && !skin.isUpToDate()) {
+                            dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
+                                    .setTitle(R.string.update_details)
+                                    .setMessage(skin.getDetails())
+                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                        }
+                                    })
+                                    .show();
+                        }
                     }
                 }));
     }
