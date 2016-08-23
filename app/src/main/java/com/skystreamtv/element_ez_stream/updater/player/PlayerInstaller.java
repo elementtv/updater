@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,6 +34,17 @@ public class PlayerInstaller {
         this.resources = context.getResources();
         this.package_manager = context.getPackageManager();
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + resources.getString(R.string.player_id) + "/files/.kodi");
+    }
+
+    public static void launchPlayer(Context context) {
+        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
+        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launch_intent);
+        Intent finishIntent = new Intent(context.getApplicationContext(), DisclaimerActivity.class);
+        finishIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        finishIntent.putExtra(Constants.EXIT, true);
+        context.startActivity(finishIntent);
     }
 
     public boolean isPlayerInstalled() {
@@ -116,9 +128,6 @@ public class PlayerInstaller {
     }
 
     public void launchPlayer() {
-        Intent launch_intent = package_manager.getLaunchIntentForPackage(resources.getString(R.string.player_id));
-        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(launch_intent);
+        launchPlayer(context);
     }
 }

@@ -50,10 +50,6 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
             @Override
             public void onClick(View view) {
                 playerInstaller.launchPlayer();
-                Intent finish_intent = new Intent(getApplicationContext(), DisclaimerActivity.class);
-                finish_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                finish_intent.putExtra("EXIT", true);
-                startActivity(finish_intent);
             }
         });
 
@@ -90,7 +86,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
     }
 
     private void update(Skin selectedSkin) {
-        if (dialog.isShowing()) dialog.dismiss();
+        if (dialog != null && dialog.isShowing()) dialog.dismiss();
         Intent updateIntent = new Intent(this, UpdateActivity.class);
         updateIntent.putExtra(Constants.SERVICE_RESET, true);
         updateIntent.putExtra(Constants.SKINS, selectedSkin);

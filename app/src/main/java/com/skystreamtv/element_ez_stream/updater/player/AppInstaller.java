@@ -13,6 +13,7 @@ import android.util.Log;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.model.App;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -68,7 +69,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
             Log.d(TAG, "Get GitHub Repo");
             GHRepository repository = GitHubHelper.connectRepository(context.getResources());
             Log.d(TAG, "Getting apps.json");
-            GHContent content = repository.getFileContent("/kodi_app.json");
+            GHContent content = repository.getFileContent(Constants.KODI_LOCATION);
             Log.d(TAG, "Prepare JSON reader for kodi_app.json");
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             Log.d(TAG, "Start reading JSON data");

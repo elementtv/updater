@@ -22,4 +22,5 @@ public class Constants {
     //element files
     public static final String UPDATE_JSON_FILE = "/element_update.json";
     public static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
+    public static final String KODI_LOCATION = "/element_kodi_app.json";
 }

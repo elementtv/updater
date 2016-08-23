@@ -21,6 +21,7 @@ import android.util.Log;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.io.File;
@@ -97,11 +98,11 @@ public class PlayerUpdaterService extends IntentService {
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
         this.skin = intent.getParcelableExtra(Constants.SKINS);
         service_status = Status.RUNNING;
-        doUpdate();
+        boolean result = doUpdate();
         if (service_status == Status.CANCELED)
             updateCancelled();
         else {
-            updateCompleted();
+            updateCompleted(result);
             service_status = Status.FINISHED;
         }
         wakeLock.release();
@@ -147,7 +148,10 @@ public class PlayerUpdaterService extends IntentService {
         sendCallbackMessage(msg);
     }
 
-    protected void updateCompleted() {
+    protected void updateCompleted(boolean updated) {
+        if (updated) {
+            PlayerInstaller.launchPlayer(this);
+        }
         sendCallbackMessage(Message.obtain(null, MSG_UPDATE_COMPLETED));
     }
 
