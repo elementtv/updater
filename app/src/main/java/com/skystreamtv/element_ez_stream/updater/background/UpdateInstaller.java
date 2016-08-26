@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,9 +24,14 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
 
     private Context context;
     private ProgressDialog progressDialog;
+    private String id;
+    private String version;
+    private UpdateCompleteListener listener;
+    private boolean fireListener = false;
 
-    public void init(Context context) {
+    public void init(Context context, UpdateCompleteListener listener) {
         this.context = context;
+        this.listener = listener;
     }
 
     @Override
@@ -51,6 +57,7 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
         super.onPostExecute(aVoid);
         progressDialog.dismiss();
         progressDialog.setProgress(0);
+        if (fireListener) listener.updateComplete();
     }
 
     @Override
@@ -58,6 +65,13 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
         try {
 
             String urlString = strings[0];
+
+            // This would indicate that another app is being updated
+            if (strings[1] != null && !strings[1].equals("")) {
+                id = strings[1];
+                version = strings[2];
+            }
+
             Log.d(TAG, "Get " + urlString);
             URL url = new URL(urlString);
             HttpURLConnection c = (HttpURLConnection) url.openConnection();
@@ -80,8 +94,8 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
             long total = 0;
             while ((len1 = is.read(buffer)) != -1) {
                 total += len1;
-                long percent = (total*100)/lengthOfFile;
-                publishProgress((int)percent);
+                long percent = (total * 100) / lengthOfFile;
+                publishProgress((int) percent);
                 fos.write(buffer, 0, len1);
             }
             fos.close();
@@ -91,11 +105,19 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
             intent.setDataAndType(Uri.fromFile(outputFile), "application/vnd.android.package-archive");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
             context.startActivity(intent);
+            if (id != null && !id.equals("")) {
+                PreferenceHelper.savePreference(context, id, Integer.valueOf(version));
+                fireListener = true;
+            }
             Log.d(TAG, "DONE");
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public interface UpdateCompleteListener {
+        void updateComplete();
     }
 }
 

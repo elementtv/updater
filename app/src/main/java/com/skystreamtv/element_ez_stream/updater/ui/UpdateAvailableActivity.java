@@ -18,6 +18,7 @@ import android.widget.Button;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
+import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
@@ -87,10 +88,22 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
 
     private void update(Skin selectedSkin) {
         if (dialog != null && dialog.isShowing()) dialog.dismiss();
-        Intent updateIntent = new Intent(this, UpdateActivity.class);
-        updateIntent.putExtra(Constants.SERVICE_RESET, true);
-        updateIntent.putExtra(Constants.SKINS, selectedSkin);
-        startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
+        if (selectedSkin.getId() > 2) {
+            UpdateInstaller installer = new UpdateInstaller();
+            installer.init(this, new UpdateInstaller.UpdateCompleteListener() {
+                @Override
+                public void updateComplete() {
+                    onActivityResult(0, 0, getIntent());
+                }
+            });
+            installer.execute(selectedSkin.getDownloadUrl(), String.valueOf(selectedSkin.getId()),
+                    String.valueOf(selectedSkin.getVersion()));
+        } else {
+            Intent updateIntent = new Intent(this, UpdateActivity.class);
+            updateIntent.putExtra(Constants.SERVICE_RESET, true);
+            updateIntent.putExtra(Constants.SKINS, selectedSkin);
+            startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
+        }
     }
 
     @Override

@@ -158,7 +158,12 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             UpdateInstaller installer = new UpdateInstaller();
-                            installer.init(DisclaimerActivity.this);
+                            installer.init(DisclaimerActivity.this, new UpdateInstaller.UpdateCompleteListener() {
+                                @Override
+                                public void updateComplete() {
+                                    // do nothing here
+                                }
+                            });
                             installer.execute(update.getDownloadUrl());
                         }
                     }).show();

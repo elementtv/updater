@@ -15,6 +15,7 @@ import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.io.File;
 import java.io.FileReader;
@@ -67,7 +68,7 @@ public class PlayerInstaller {
                     resources.getString(R.string.play_store_not_installed));
         }
 
-        Toast.makeText(context,"Please wait Kodi media player is installing",Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Please wait Kodi media player is installing", Toast.LENGTH_SHORT).show();
     }
 
     protected Skin getInstalledSkin() {
@@ -112,6 +113,10 @@ public class PlayerInstaller {
         Skin installedSkin = getInstalledSkin();
         if (installedSkin.getId() == -1) {
             return installedSkin.getName().equals(selectedSkin.getName()) && installedSkin.getVersion() >= selectedSkin.getVersion();
+        } else if (selectedSkin.getId() > 2) {
+            // This would mean there is an app that is not a skin
+            int lastVersion = PreferenceHelper.getPreference(context, String.valueOf(selectedSkin.getId()), 0);
+            return lastVersion >= selectedSkin.getVersion();
         }
 
         return installedSkin.getId() == selectedSkin.getId() && installedSkin.getVersion() >= selectedSkin.getVersion();
@@ -122,6 +127,8 @@ public class PlayerInstaller {
 
         if (installedSkin.getId() == -1) {
             return installedSkin.getName().equals(selectedSkin.getName());
+        } else if (selectedSkin.getId() > 2) {
+            return true;
         }
 
         return installedSkin.getId() == selectedSkin.getId();

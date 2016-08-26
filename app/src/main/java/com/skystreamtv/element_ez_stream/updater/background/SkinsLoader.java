@@ -21,7 +21,6 @@ import java.util.ArrayList;
 @SuppressWarnings("unchecked")
 public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implements GitHubHelper.GitHubTask {
 
-    private static final int MAX_KINS = 2;
     private static final String TAG = "SkinsLoader";
     private Context context;
     private String failure_reason;
@@ -58,9 +57,8 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             ArrayList<Skin> list = new ArrayList<>();
             Log.d(TAG, "Start reading JSON array");
-            int i = 0;
             reader.beginArray();
-            while (i < MAX_KINS && reader.hasNext()) {
+            while (reader.hasNext()) {
                 int id = -1;
                 String name = null;
                 String description = null;
@@ -100,7 +98,6 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                     }
                 }
                 reader.endObject();
-                i++;
                 list.add(new Skin(id, screenshot_url, name, description, brand_url, true, version, details));
             }
             if (!reader.hasNext())
