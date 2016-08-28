@@ -67,7 +67,7 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
             String urlString = strings[0];
 
             // This would indicate that another app is being updated
-            if (strings[1] != null && !strings[1].equals("")) {
+            if (strings.length > 1 && strings[1] != null && !strings[1].equals("")) {
                 id = strings[1];
                 version = strings[2];
             }
