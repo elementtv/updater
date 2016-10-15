@@ -1,7 +1,6 @@
 package com.skystreamtv.element_ez_stream.updater.background;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.JsonReader;
 import android.util.Log;
@@ -41,16 +40,9 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
     protected ArrayList<Skin> doInBackground(Void... params) {
         hasRun = true;
         Log.d(TAG, "Running GitHub Task");
-        Resources resources;
-        try {
-            resources = context.getResources();
-        } catch (NullPointerException e) {
-            cancel(true);
-            return null;
-        }
         try {
             Log.d(TAG, "Get GitHub Repo");
-            GHRepository repository = GitHubHelper.connectRepository(resources);
+            GHRepository repository = GitHubHelper.connectRepository();
             Log.d(TAG, "Getting location.json");
             GHContent content = repository.getFileContent(Constants.LOCATION_JSON_FILE);
             Log.d(TAG, "Prepare JSON reader for location.json");
@@ -105,11 +97,11 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
             reader.close();
             return list;
         } catch (IOException | NullPointerException e) {
-            failure_reason = resources.getString(R.string.connection_error_message);
+            failure_reason = context.getString(R.string.connection_error_message);
             cancel(true);
             return null;
         } catch (NumberFormatException e) {
-            failure_reason = resources.getString(R.string.github_internal_error);
+            failure_reason = context.getString(R.string.github_internal_error);
             cancel(true);
             return null;
         }
@@ -127,8 +119,11 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
     public void onPostExecute(ArrayList<Skin> result) {
         Log.d("PlayerUpdater", "Call SkinsLoader.onPostExecute()");
         GitHubHelper.GitHubCallbacks<ArrayList<Skin>> github_callbacks = (GitHubHelper.GitHubCallbacks<ArrayList<Skin>>) context;
-        if (github_callbacks != null)
+        if (github_callbacks != null) {
             github_callbacks.onPostExecute(result);
+        } else {
+            Log.e("SkinsLoader", "github_callbacks == null");
+        }
     }
 
     @Override

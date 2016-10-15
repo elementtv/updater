@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         applicationId "com.skystreamtv.element_ez_stream.updater"
         minSdkVersion 19
         targetSdkVersion 24
-        versionCode 11
+        versionCode 13
         versionName "1.0"
     }
     buildTypes {
@@ -36,8 +36,9 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'org.kohsuke:github-api:1.76'
     compile 'com.mcxiaoke.volley:library:1.0.19'
-    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.jaredrummler:android-processes:1.0.8'
 }

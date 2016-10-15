@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.JsonReader;
@@ -26,15 +25,13 @@ public class PlayerInstaller {
     private static final String TAG = "PlayerInstaller";
 
     protected Context context;
-    protected PackageManager package_manager;
-    protected Resources resources;
-    protected File PLAYER_CONF_DIRECTORY;
+    private PackageManager package_manager;
+    private File PLAYER_CONF_DIRECTORY;
 
     public PlayerInstaller(Context context) {
         this.context = context;
-        this.resources = context.getResources();
         this.package_manager = context.getPackageManager();
-        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + resources.getString(R.string.player_id) + "/files/.kodi");
+        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + context.getString(R.string.player_id) + "/files/.kodi");
     }
 
     public static void launchPlayer(Context context) {
@@ -50,7 +47,7 @@ public class PlayerInstaller {
 
     public boolean isPlayerInstalled() {
         try {
-            package_manager.getPackageInfo(resources.getString(R.string.player_id), 0);
+            package_manager.getPackageInfo(context.getString(R.string.player_id), 0);
             return true;
         } catch (PackageManager.NameNotFoundException e) {
             return false;
@@ -64,14 +61,14 @@ public class PlayerInstaller {
             market_intent.setData(Uri.parse("https://www.dropbox.com/s/cjch4vr34fk0jht/kodi-160-elitemods-032816-skinmod.apk?dl=1"));
             disclaimer_activity.startActivity(market_intent);
         } catch (ActivityNotFoundException e) {
-            disclaimer_activity.showErrorDialog(resources.getString(R.string.missing_play_store),
-                    resources.getString(R.string.play_store_not_installed));
+            disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),
+                    context.getString(R.string.play_store_not_installed));
         }
 
         Toast.makeText(context, "Please wait Kodi media player is installing", Toast.LENGTH_SHORT).show();
     }
 
-    protected Skin getInstalledSkin() {
+    private Skin getInstalledSkin() {
         Skin skin = new Skin();
         Log.d(TAG, "Call PlayerInstaller.getInstalledSkin()");
         File updater_info_file = new File(PLAYER_CONF_DIRECTORY, "updater.inf");

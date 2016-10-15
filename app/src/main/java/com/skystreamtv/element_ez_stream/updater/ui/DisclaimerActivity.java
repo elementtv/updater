@@ -57,10 +57,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             finish();
         setContentView(R.layout.activity_disclaimer);
 
-        playerInstaller = new PlayerInstaller(this);
-        skinsLoader = new SkinsLoader(this);
-        progressDialog = new ProgressDialog(this);
-
         nextButton = (Button) findViewById(R.id.nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
 
@@ -83,6 +79,10 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void completeSetup() {
+
+        playerInstaller = new PlayerInstaller(this);
+        skinsLoader = new SkinsLoader(this);
+        progressDialog = new ProgressDialog(this);
 
         setTitle(String.format(getString(R.string.disclaimer_activity_title),
                 getString(R.string.app_name)));
@@ -218,7 +218,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
     public void onNextButtonClick(View nextButtonView) {
         if (!kodiInstalled) {
-
             playerInstaller.installPlayer();
             AppInstaller appInstaller = new AppInstaller();
             appInstaller.init(this);

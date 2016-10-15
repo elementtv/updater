@@ -67,7 +67,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
         try {
             App kodi = new App();
             Log.d(TAG, "Get GitHub Repo");
-            GHRepository repository = GitHubHelper.connectRepository(context.getResources());
+            GHRepository repository = GitHubHelper.connectRepository();
             Log.d(TAG, "Getting apps.json");
             GHContent content = repository.getFileContent(Constants.KODI_LOCATION);
             Log.d(TAG, "Prepare JSON reader for kodi_app.json");
