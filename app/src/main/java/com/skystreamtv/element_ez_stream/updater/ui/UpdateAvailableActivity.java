@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -70,18 +71,16 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
                     @Override
                     public void onClick(View view, int position) {
                         final Skin skin = skins.get(position);
-                        if (skin.isInstalled() && !skin.isUpToDate()) {
-                            dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
-                                    .setTitle(R.string.update_details)
-                                    .setMessage(skin.getDetails())
-                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            dialogInterface.dismiss();
-                                        }
-                                    })
-                                    .show();
-                        }
+                        dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
+                                .setTitle(R.string.update_details)
+                                .setMessage(Html.fromHtml(skin.getDetails()))
+                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                })
+                                .show();
                     }
                 }));
     }
