@@ -62,7 +62,7 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     protected App doInBackground(Void... voids) {
         try {
             App update = new App();
-            GHRepository repository = GitHubHelper.connectRepository(context.getResources());
+            GHRepository repository = GitHubHelper.connectRepository();
             GHContent content = repository.getFileContent(Constants.UPDATE_JSON_FILE);
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             reader.beginObject();
