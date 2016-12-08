@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -24,6 +23,7 @@ import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
+import com.skystreamtv.element_ez_stream.updater.utils.TextUtil;
 import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
 
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
                         final Skin skin = skins.get(position);
                         dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
                                 .setTitle(R.string.update_details)
-                                .setMessage(Html.fromHtml(skin.getDetails()))
+                                .setMessage(TextUtil.fromHtml(skin.getDetails()))
                                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -148,8 +148,8 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         private GestureDetector gestureDetector;
         private UpdateAvailableActivity.ClickListener clickListener;
 
-        public RecyclerTouchListener(Context context,
-                                     final UpdateAvailableActivity.ClickListener clickListener) {
+        RecyclerTouchListener(Context context,
+                              final UpdateAvailableActivity.ClickListener clickListener) {
             this.clickListener = clickListener;
             gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                 @Override

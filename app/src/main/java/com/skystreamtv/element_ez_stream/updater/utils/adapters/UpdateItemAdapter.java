@@ -2,7 +2,6 @@ package com.skystreamtv.element_ez_stream.updater.utils.adapters;
 
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.utils.TextUtil;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         final Skin skin = skins.get(position);
         holder.name.setText(skin.getName());
-        holder.details.setText(Html.fromHtml(skin.getDetails()));
+        holder.details.setText(TextUtil.fromHtml(skin.getDetails()));
         Log.d("Adapter", "skin: " + skin.getName() + " UTD: " + skin.isUpToDate());
         if (skin.isInstalled()) {
             if (!skin.isUpToDate()) {
@@ -75,12 +75,12 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
         void doUpdate(Skin skin);
     }
 
-    public class ItemViewHolder extends RecyclerView.ViewHolder {
+    class ItemViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView name, status, details;
         public Button update;
+        TextView name, status, details;
 
-        public ItemViewHolder(View itemView) {
+        ItemViewHolder(View itemView) {
             super(itemView);
             name = (TextView) itemView.findViewById(R.id.update_name);
             status = (TextView) itemView.findViewById(R.id.update_status);
