@@ -56,7 +56,6 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
         } else {
             holder.status.setText(R.string.not_installed);
             holder.update.setText(R.string.install);
-            holder.details.setVisibility(View.GONE);
             holder.update.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
