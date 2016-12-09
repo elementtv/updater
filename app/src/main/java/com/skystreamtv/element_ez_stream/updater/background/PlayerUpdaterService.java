@@ -285,10 +285,10 @@ public class PlayerUpdaterService extends IntentService {
                 throw new IOException("External storage is not mounted");
             File unzip_directory = new File(ContextCompat.getExternalFilesDirs(this, Environment.DIRECTORY_DOWNLOADS)[0], "media_player_update");
             Log.d(TAG, "Creating destination directory for decompress zip file: " + unzip_directory);
-            if (unzip_directory.exists())
+            if (unzip_directory.exists()) {
                 if (!deleteDirectory(unzip_directory))
                     throw new IOException("Could not delete old download");
-            if (!unzip_directory.mkdirs())
+            } else if (!unzip_directory.mkdirs())
                 throw new IOException("Could not create destination directory: " + unzip_directory);
             Log.d(TAG, "Querying download manager to get zip filename");
             DownloadManager.Query query = new DownloadManager.Query();
@@ -331,6 +331,7 @@ public class PlayerUpdaterService extends IntentService {
             zip_stream.close();
             if (zip_file.exists() && !zip_file.delete())
                 Log.d(TAG, "Could not delete the update zip file.");
+            Log.e(TAG, "UnZip Done");
             return true;
         } catch (IOException e) {
             Log.d(TAG, "Error: " + e.getMessage());
@@ -346,6 +347,12 @@ public class PlayerUpdaterService extends IntentService {
         File unzipped_directory = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "media_player_update");
         File addons_origin = new File(unzipped_directory, "/files/.kodi/addons");
         File userdata_origin = new File(unzipped_directory, "/files/.kodi/userdata");
+        if (userdata_origin.exists()) {
+            Log.e(TAG, "Origin Directory");
+            for (File file : userdata_origin.listFiles()) {
+                Log.e("File: ", file.getName());
+            }
+        }
         if (!(addons_origin.exists() && userdata_origin.exists())) {
             other_failure_reason = getString(R.string.update_incomplete);
             cancel();
@@ -354,6 +361,13 @@ public class PlayerUpdaterService extends IntentService {
         Log.d(TAG, "Origin directories exists.");
         File addons_destination = new File(PLAYER_CONF_DIRECTORY, "addons");
         File userdata_destination = new File(PLAYER_CONF_DIRECTORY, "userdata");
+        if (userdata_destination.exists())
+            Log.e(TAG, "Destination Directory");
+        if (userdata_destination.listFiles() != null) {
+            for (File file : userdata_destination.listFiles()) {
+                Log.e("File: ", file.getName());
+            }
+        }
         if ((addons_destination.exists() && !deleteDirectory(addons_destination)) ||
                 (userdata_destination.exists() && !deleteDirectory(userdata_destination))) {
             other_failure_reason = getString(R.string.update_not_clean);
@@ -401,10 +415,16 @@ public class PlayerUpdaterService extends IntentService {
         for (File file : files) {
             if (file.isFile())
                 all_erased &= file.delete();
-            else if (file.isDirectory())
-                all_erased &= deleteDirectory(file);
+            else if (file.isDirectory()) {
+                if (file.getName().equalsIgnoreCase("addon_data")) {
+                    Log.e(TAG, "don't delete addon_data");
+                    all_erased &= true;
+                } else {
+                    all_erased &= deleteDirectory(file);
+                }
+            }
         }
-        return all_erased && target_directory.delete();
+        return all_erased;
     }
 
     public enum Status {NEW, PENDING, RUNNING, FINISHED, CANCELED}
