@@ -23,6 +23,7 @@ import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +33,7 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class PlayerUpdaterService extends IntentService {
+public class PlayerUpdaterService extends IntentService implements Files.ProgressListener {
 
     public static final int MSG_REGISTER_CLIENT = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
@@ -41,14 +42,15 @@ public class PlayerUpdaterService extends IntentService {
     public static final int MSG_UPDATE_CANCELLED = 5;
     public static final int MSG_UPDATE_COMPLETED = 6;
     private static final String TAG = "PlayerUpdaterService";
-    protected DownloadManager download_manager;
-    protected long download_id;
-    protected Skin skin;
-    protected File PLAYER_CONF_DIRECTORY;
-    protected String other_failure_reason;
-    protected Status service_status = Status.NEW;
-    protected Messenger client;
-    protected final Messenger service_messenger = new Messenger(new Handler() {
+
+    private DownloadManager download_manager;
+    private long download_id;
+    private Skin skin;
+    private File PLAYER_CONF_DIRECTORY;
+    private String other_failure_reason;
+    private Status service_status = Status.NEW;
+    private Messenger client;
+    private final Messenger service_messenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -62,7 +64,8 @@ public class PlayerUpdaterService extends IntentService {
             }
         }
     });
-    protected int old_progress = 0;
+    private boolean cleanInstall;
+    private int old_progress = 0;
 
     public PlayerUpdaterService() {
         super("MadCastService");
@@ -78,6 +81,8 @@ public class PlayerUpdaterService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "Service: indent received");
         if (intent.getBooleanExtra("SERVICE_RESET", false)) {
+            cleanInstall = intent.getBooleanExtra(Constants.CLEAN_INSTAL, false);
+            Log.d(TAG, "Clean Install: " + cleanInstall);
             Log.d(TAG, "Service: reset.");
             startUpdate(intent);
         } else {
@@ -172,7 +177,8 @@ public class PlayerUpdaterService extends IntentService {
                 return false;
             } else if (dl_progress == 101) {
                 Log.d(TAG, "get_download_progress() returned 101 (completed)");
-                publishProgress(50);
+                if (cleanInstall) publishProgress(50);
+                else publishProgress(33);
                 return updatePlayerConfiguration();
             } else
                 publishProgress(dl_progress);
@@ -187,7 +193,8 @@ public class PlayerUpdaterService extends IntentService {
 
 
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(skin.getDownloadUrl()));
-        File destination = new File(ContextCompat.getExternalFilesDirs(this, Environment.DIRECTORY_DOWNLOADS)[0], "media_player_update.zip");
+        File destination = new File(ContextCompat.getExternalFilesDirs(this,
+                Environment.DIRECTORY_DOWNLOADS)[0], "media_player_update.zip");
         if (destination.exists() && !destination.delete())
             throw new IOException("Failed to remove old update download from storage. Please, contact our support");
         request.setDestinationInExternalFilesDir(this, null, "media_player_update.zip");
@@ -210,11 +217,13 @@ public class PlayerUpdaterService extends IntentService {
                 Log.d(TAG, "Download manager reported download completed");
                 return 101;
             } else {
-                long bytes_downloaded = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                long bytes_downloaded = cursor.getInt(cursor.getColumnIndex(
+                        DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                 long bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
                 cursor.close();
                 Log.d(TAG, "downloaded: " + bytes_downloaded + ", total: " + bytes_total);
-                return (bytes_downloaded >= 0) && (bytes_total > 0) ? (int) (bytes_downloaded * 50 / bytes_total) : 0;
+                int divisor = cleanInstall ? 50 : 33;
+                return (bytes_downloaded >= 0) && (bytes_total > 0) ? (int) (bytes_downloaded * divisor / bytes_total) : 0;
             }
         } catch (Exception e) {
             cursor.close();
@@ -283,7 +292,8 @@ public class PlayerUpdaterService extends IntentService {
         try {
             if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
                 throw new IOException("External storage is not mounted");
-            File unzip_directory = new File(ContextCompat.getExternalFilesDirs(this, Environment.DIRECTORY_DOWNLOADS)[0], "media_player_update");
+            File unzip_directory = new File(ContextCompat.getExternalFilesDirs(this,
+                    Environment.DIRECTORY_DOWNLOADS)[0], "media_player_update");
             Log.d(TAG, "Creating destination directory for decompress zip file: " + unzip_directory);
             if (unzip_directory.exists()) {
                 if (!deleteDirectory(unzip_directory))
@@ -295,7 +305,9 @@ public class PlayerUpdaterService extends IntentService {
             query.setFilterById(download_id);
             Cursor cursor = download_manager.query(query);
             cursor.moveToFirst();
-            @SuppressWarnings("deprecation") String zipFilePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+            @SuppressWarnings("deprecation") String zipFilePath = cursor.getString(cursor.getColumnIndex(
+                    DownloadManager.COLUMN_LOCAL_FILENAME));
+
             Log.d(TAG, "Opening zip file stream: " + zipFilePath);
             File zip_file = new File(zipFilePath);
             ZipInputStream zip_stream = new ZipInputStream(new FileInputStream(zip_file));
@@ -320,14 +332,16 @@ public class PlayerUpdaterService extends IntentService {
                         file_output.write(buffer, 0, count);
                         unzipped_bytes += count;
                         unzipped_bytes = unzipped_bytes > max_bytes ? max_bytes : unzipped_bytes;
-                        int percent = (int) (50 + (unzipped_bytes * 48 / max_bytes));
+                        int total = cleanInstall ? 50 : 33;
+                        int divisor = cleanInstall ? 48 : 33;
+                        int percent = (int) (total + (unzipped_bytes * divisor / max_bytes));
                         publishProgress(percent);
                     }
                     file_output.close();
                 }
                 zip_stream.closeEntry();
             }
-            publishProgress(98);
+            publishProgress(cleanInstall ? 98 : 66);
             zip_stream.close();
             if (zip_file.exists() && !zip_file.delete())
                 Log.d(TAG, "Could not delete the update zip file.");
@@ -343,7 +357,6 @@ public class PlayerUpdaterService extends IntentService {
 
     protected boolean applyPlayerConfiguration() {
         Log.d(TAG, "Call applyPlayerConfiguration()");
-        publishProgress(99);
         File unzipped_directory = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "media_player_update");
         File addons_origin = new File(unzipped_directory, "/files/.kodi/addons");
         File userdata_origin = new File(unzipped_directory, "/files/.kodi/userdata");
@@ -359,22 +372,20 @@ public class PlayerUpdaterService extends IntentService {
             return false;
         }
         Log.d(TAG, "Origin directories exists.");
+
         File addons_destination = new File(PLAYER_CONF_DIRECTORY, "addons");
         File userdata_destination = new File(PLAYER_CONF_DIRECTORY, "userdata");
-        if (userdata_destination.exists())
-            Log.e(TAG, "Destination Directory");
-        if (userdata_destination.listFiles() != null) {
-            for (File file : userdata_destination.listFiles()) {
-                Log.e("File: ", file.getName());
+
+        if (cleanInstall) {
+            if ((addons_destination.exists() && !deleteDirectory(addons_destination)) ||
+                    (userdata_destination.exists() && !deleteDirectory(userdata_destination))) {
+                other_failure_reason = getString(R.string.update_not_clean);
+                cancel();
+                return false;
             }
+            Log.d(TAG, "Destination directories cleaned.");
         }
-        if ((addons_destination.exists() && !deleteDirectory(addons_destination)) ||
-                (userdata_destination.exists() && !deleteDirectory(userdata_destination))) {
-            other_failure_reason = getString(R.string.update_not_clean);
-            cancel();
-            return false;
-        }
-        Log.d(TAG, "Destination directories (now) don't exist.");
+
         if (!PLAYER_CONF_DIRECTORY.exists())
             if (!PLAYER_CONF_DIRECTORY.mkdirs()) {
                 other_failure_reason = getString(R.string.can_not_write_update);
@@ -382,12 +393,25 @@ public class PlayerUpdaterService extends IntentService {
                 return false;
             }
         Log.d(TAG, "Player configuration directory exist.");
-        if (!(addons_origin.renameTo(addons_destination) && userdata_origin.renameTo(userdata_destination))) {
-            other_failure_reason = getString(R.string.update_error_write);
-            cancel();
-            return false;
+
+        if (cleanInstall) {
+            if (!(addons_origin.renameTo(addons_destination) && userdata_origin.renameTo(userdata_destination))) {
+                other_failure_reason = getString(R.string.update_error_write);
+                cancel();
+                return false;
+            }
+            Log.d(TAG, "Update overwrite complete");
+        } else {
+            if (!(copyFilesToNewDirectory(addons_origin, addons_destination) &&
+                    copyFilesToNewDirectory(userdata_origin, userdata_destination))) {
+                other_failure_reason = getString(R.string.update_error_write);
+                cancel();
+                return false;
+            }
+            Log.d(TAG, "Update copied");
         }
-        Log.d(TAG, "Update copied");
+
+
         try {
             JsonWriter writer = new JsonWriter(new FileWriter(new File(PLAYER_CONF_DIRECTORY, "updater.inf")));
             writer.beginObject();
@@ -415,16 +439,27 @@ public class PlayerUpdaterService extends IntentService {
         for (File file : files) {
             if (file.isFile())
                 all_erased &= file.delete();
-            else if (file.isDirectory()) {
-                if (file.getName().equalsIgnoreCase("addon_data")) {
-                    Log.e(TAG, "don't delete addon_data");
-                    all_erased &= true;
-                } else {
-                    all_erased &= deleteDirectory(file);
-                }
-            }
+            else if (file.isDirectory())
+                all_erased &= deleteDirectory(file);
         }
-        return all_erased;
+        return all_erased && target_directory.delete();
+    }
+
+    private boolean copyFilesToNewDirectory(File fromDirectory, File toDirectory) {
+        boolean success = true;
+        try {
+            Files files = new Files(this);
+            files.copyDirectory(fromDirectory, toDirectory);
+        } catch (IOException exception) {
+            success = false;
+            Log.e(TAG, exception.getMessage(), exception);
+        }
+        return success;
+    }
+
+    @Override
+    public void publishFileProgress(int progress) {
+        publishProgress(progress);
     }
 
     public enum Status {NEW, PENDING, RUNNING, FINISHED, CANCELED}

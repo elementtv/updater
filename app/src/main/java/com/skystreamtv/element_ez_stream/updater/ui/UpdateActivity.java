@@ -91,6 +91,8 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent startIntent = getIntent();
             Log.d(TAG, "Get skin");
             Skin skin = startIntent.getParcelableExtra(Constants.SKINS);
+            boolean cleanInstall = startIntent.getBooleanExtra(Constants.CLEAN_INSTAL, false);
+            Log.d(TAG, "Clean Install: " + cleanInstall);
             setTitle(String.format(getString(R.string.updating_brand), skin.getName()));
             Log.d(TAG, "Reset view");
             resetView();
@@ -98,6 +100,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent serviceIntent = new Intent(this, PlayerUpdaterService.class);
             serviceIntent.putExtra(Constants.SERVICE_RESET, startIntent.getBooleanExtra(Constants.SERVICE_RESET, retrying));
             serviceIntent.putExtra(Constants.SKINS, skin);
+            serviceIntent.putExtra(Constants.CLEAN_INSTAL, cleanInstall);
             startService(serviceIntent);
         } catch (Exception e) {
             Log.d(TAG, Log.getStackTraceString(e));
@@ -190,12 +193,12 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     protected void updateProgressBarPercent(int percent) {
         if (percent <= 0)
             setStatusText(getString(R.string.starting_download));
-        else if (percent > 0  && percent <= 50)
+        else if (percent > 0 && percent <= 33)
             setStatusText(String.format(getString(R.string.downloading_new_version),
                     getString(R.string.player_name)));
-        else if (percent > 50  && percent <= 98)
+        else if (percent > 33 && percent <= 66)
             setStatusText(getString(R.string.decompressing_update));
-        else if (percent == 99)
+        else if (percent == 67)
             setStatusText(getString(R.string.applying_update));
         else if (percent == 100)
             setStatusText(getString(R.string.update_done));

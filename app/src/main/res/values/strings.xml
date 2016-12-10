@@ -75,4 +75,7 @@
     <string name="please_wait">Installing Updates. Please wait…</string>
     <string name="checking_for_updates">Checking for updates. Please wait…</string>
     <string name="installing_kodi">Installing Kodi. Please wait…</string>
+    <string name="fresh_install">Fresh Install</string>
+    <string name="save_user_settings">Save User Settings</string>
+    <string name="install_details">Would you like to do a fresh install or preserve kodi user settings? Doing a fresh install will delete all user settings in kodi, but will install much quicker. Saving user preferences will add additional time to the install process.</string>
 </resources>

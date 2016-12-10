@@ -64,6 +64,7 @@
             android:theme="@style/Theme.AppCompat.Dialog" />
         <activity android:name=".ui.UpdateAvailableActivity" />
         <activity android:name=".dialogs.OpenActivity" />
+        <activity android:name=".ui.UpdateTypeActivity"></activity>
     </application>
 
 </manifest>
