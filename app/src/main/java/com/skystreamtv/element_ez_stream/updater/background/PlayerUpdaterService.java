@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -42,31 +43,16 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     public static final int MSG_UPDATE_CANCELLED = 5;
     public static final int MSG_UPDATE_COMPLETED = 6;
     private static final String TAG = "PlayerUpdaterService";
-
+    private final Messenger service_messenger = new Messenger(new MessengerHandler(this));
+    public Messenger client;
     private DownloadManager download_manager;
     private long download_id;
     private Skin skin;
     private File PLAYER_CONF_DIRECTORY;
     private String other_failure_reason;
     private Status service_status = Status.NEW;
-    private Messenger client;
-    private final Messenger service_messenger = new Messenger(new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_REGISTER_CLIENT:
-                    client = msg.replyTo;
-                    break;
-                case MSG_UNREGISTER_CLIENT:
-                    client = null;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    });
     private boolean cleanInstall;
     private int old_progress = 0;
-
     public PlayerUpdaterService() {
         super("MadCastService");
     }
@@ -463,4 +449,26 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     }
 
     public enum Status {NEW, PENDING, RUNNING, FINISHED, CANCELED}
+
+    private static class MessengerHandler extends Handler {
+        private final WeakReference<PlayerUpdaterService> service;
+
+        MessengerHandler(PlayerUpdaterService service) {
+            this.service = new WeakReference<>(service);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            PlayerUpdaterService service = this.service.get();
+            switch (msg.what) {
+                case MSG_REGISTER_CLIENT:
+                    service.client = msg.replyTo;
+                    break;
+                case MSG_UNREGISTER_CLIENT:
+                    service.client = null;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
 }

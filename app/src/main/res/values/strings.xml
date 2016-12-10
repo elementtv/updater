@@ -20,9 +20,6 @@
     <string name="file_exists">The requested destination file already exists.</string>
     <string name="github_error">Connection Error</string>
     <string name="github_internal_error">Internal error: something went wrong when processing remote information.</string>
-    <string name="github_password" />
-    <string name="github_repository">skystreamtv/updater</string>
-    <string name="github_username" />
     <string name="http_error">An HTTP error has occurred.</string>
     <string name="install_player">Install Media Player</string>
     <string name="insufficient_space">Insufficient storage space.</string>

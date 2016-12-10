@@ -37,9 +37,4 @@ public class GitHubHelper {
     interface GitHubTask {
         void contextDestroyed();
     }
-
-    public interface GitHubCallbacks<GitHubResult> {
-        void onCancelled(String reason);
-        void onPostExecute(GitHubResult result);
-    }
 }
