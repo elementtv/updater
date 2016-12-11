@@ -17,6 +17,7 @@ import java.util.List;
  * Files Util for copy files and directories to new locations
  */
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Files {
 
     private long done = 0;
@@ -67,13 +68,13 @@ public class Files {
         }
 
         // Cater for destination being directory within the source directory (see IO-141)
-        List exclusionList = null;
+        List<String> exclusionList = null;
         if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath())) {
             File[] srcFiles = filter == null ? srcDir.listFiles() : srcDir.listFiles(filter);
             if (srcFiles != null && srcFiles.length > 0) {
-                exclusionList = new ArrayList(srcFiles.length);
-                for (int i = 0; i < srcFiles.length; i++) {
-                    File copiedFile = new File(destDir, srcFiles[i].getName());
+                exclusionList = new ArrayList<>(srcFiles.length);
+                for (File srcFile : srcFiles) {
+                    File copiedFile = new File(destDir, srcFile.getName());
                     exclusionList.add(copiedFile.getCanonicalPath());
                 }
             }
@@ -103,13 +104,13 @@ public class Files {
         if (files == null) {  // null if security restricted
             throw new IOException("Failed to list contents of " + srcDir);
         }
-        for (int i = 0; i < files.length; i++) {
-            File copiedFile = new File(destDir, files[i].getName());
-            if (exclusionList == null || !exclusionList.contains(files[i].getCanonicalPath())) {
-                if (files[i].isDirectory()) {
-                    doCopyDirectory(files[i], copiedFile, filter, preserveFileDate, exclusionList);
+        for (File file : files) {
+            File copiedFile = new File(destDir, file.getName());
+            if (exclusionList == null || !exclusionList.contains(file.getCanonicalPath())) {
+                if (file.isDirectory()) {
+                    doCopyDirectory(file, copiedFile, filter, preserveFileDate, exclusionList);
                 } else {
-                    doCopyFile(files[i], copiedFile, preserveFileDate);
+                    doCopyFile(file, copiedFile, preserveFileDate);
                 }
             }
         }
