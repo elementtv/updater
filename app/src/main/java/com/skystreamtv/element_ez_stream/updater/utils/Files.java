@@ -110,7 +110,9 @@ public class Files {
                 if (file.isDirectory()) {
                     doCopyDirectory(file, copiedFile, filter, preserveFileDate, exclusionList);
                 } else {
-                    doCopyFile(file, copiedFile, preserveFileDate);
+                    if (!file.getName().contains("profiles")) {
+                        doCopyFile(file, copiedFile, preserveFileDate);
+                    }
                 }
             }
         }
