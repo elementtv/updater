@@ -105,7 +105,7 @@ public class Files {
             throw new IOException("Failed to list contents of " + srcDir);
         }
         for (File file : files) {
-            if (file.getName().contains("addon_data") || file.getName().contains("settings") ||
+            if (file.getName().contains("addon_data") || file.getName().contains("favorites") ||
                     file.getName().contains("profile")) continue;
 
             File copiedFile = new File(destDir, file.getName());
