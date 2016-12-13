@@ -38,7 +38,7 @@ public class Files {
         for (File file : files) {
             if (file.isFile())
                 total += file.length();
-            else if (file.isDirectory()) {
+            else if (file.isDirectory() && !file.getName().contains("addon_data")) {
                 calculateTotal(file);
             }
         }
@@ -105,14 +105,15 @@ public class Files {
             throw new IOException("Failed to list contents of " + srcDir);
         }
         for (File file : files) {
+            if (file.getName().contains("addon_data") || file.getName().contains("settings") ||
+                    file.getName().contains("profile")) continue;
+
             File copiedFile = new File(destDir, file.getName());
             if (exclusionList == null || !exclusionList.contains(file.getCanonicalPath())) {
                 if (file.isDirectory()) {
                     doCopyDirectory(file, copiedFile, filter, preserveFileDate, exclusionList);
                 } else {
-                    if (!file.getName().contains("profiles")) {
                         doCopyFile(file, copiedFile, preserveFileDate);
-                    }
                 }
             }
         }
