@@ -1,14 +1,16 @@
 package com.skystreamtv.element_ez_stream.updater.utils;
 
-import android.util.Log;
+import android.os.Environment;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,19 +106,31 @@ public class Files {
         if (files == null) {  // null if security restricted
             throw new IOException("Failed to list contents of " + srcDir);
         }
+
+        File root = Environment.getExternalStorageDirectory();
+        BufferedWriter out;
+        File logFile = new File(root, "log.txt");
+        FileWriter logwriter = new FileWriter(logFile, true);
+        out = new BufferedWriter(logwriter);
+
         for (File file : files) {
             if (file.getName().contains("addon_data") || file.getName().contains("favorites") ||
-                    file.getName().contains("profile")) continue;
+                    file.getName().contains("profile") || file.getCanonicalPath().contains("addon_data") ||
+                    file.getName().contains("sources") || file.getName().contains("onechannel"))
+                continue;
+
+            out.write(file.getCanonicalPath() + "\n");
 
             File copiedFile = new File(destDir, file.getName());
             if (exclusionList == null || !exclusionList.contains(file.getCanonicalPath())) {
                 if (file.isDirectory()) {
                     doCopyDirectory(file, copiedFile, filter, preserveFileDate, exclusionList);
                 } else {
-                        doCopyFile(file, copiedFile, preserveFileDate);
+                    doCopyFile(file, copiedFile, preserveFileDate);
                 }
             }
         }
+        out.close();
     }
 
     private void doCopyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException {
@@ -145,7 +159,6 @@ public class Files {
         }
 
         done += srcFile.length();
-        Log.e("Progress", "total: " + total + " done: " + done);
         if (listener != null) {
             int progress = (int) (66 + (done * 33 / total));
             listener.publishFileProgress(progress);
