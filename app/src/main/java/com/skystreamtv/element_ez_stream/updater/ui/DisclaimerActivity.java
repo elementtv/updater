@@ -20,7 +20,6 @@ import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.BuildConfig;
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
 import com.skystreamtv.element_ez_stream.updater.background.Updater;
@@ -32,7 +31,6 @@ import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
@@ -40,7 +38,8 @@ import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_I
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SKINS;
 
 
-public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity, GitHubHelper.GitHubCallbacks<List<Skin>> {
+public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity,
+        SkinsLoader.SkinsLoaderListener {
 
     private static final String TAG = "DisclaimerActivity";
     private PlayerInstaller playerInstaller;
@@ -60,7 +59,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         nextButton = (Button) findViewById(R.id.nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setCancelable(true)
                     .setTitle(R.string.external_storage_title)
@@ -68,7 +68,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            ActivityCompat.requestPermissions(DisclaimerActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            ActivityCompat.requestPermissions(DisclaimerActivity.this,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                     PERMISSIONS_REQUEST);
                         }
                     }).create();
@@ -81,7 +82,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private void completeSetup() {
 
         playerInstaller = new PlayerInstaller(this);
-        skinsLoader = new SkinsLoader(this);
+        skinsLoader = new SkinsLoader(this, this);
         progressDialog = new ProgressDialog(this);
 
         setTitle(String.format(getString(R.string.disclaimer_activity_title),
@@ -125,7 +126,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     checkForUpdates();
                 } else {
                     AlertDialog noConnection = Dialogs.buildErrorDialog(this,
-                            getString(R.string.no_internet_title), getString(R.string.no_internet_info), ERROR_ACTION_NO_ACTION);
+                            getString(R.string.no_internet_title), getString(R.string.no_internet_info),
+                            ERROR_ACTION_NO_ACTION);
                     noConnection.show();
                 }
             }
@@ -218,6 +220,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
     public void onNextButtonClick(View nextButtonView) {
         if (!kodiInstalled) {
+            if (playerInstaller == null) playerInstaller = new PlayerInstaller(this);
             playerInstaller.installPlayer();
             AppInstaller appInstaller = new AppInstaller();
             appInstaller.init(this);
@@ -230,7 +233,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private void updateOrLaunchPlayer() {
         progressDialog.show();
         if (skinsLoader.hasRun()) {
-            skinsLoader = new SkinsLoader(this);
+            skinsLoader = new SkinsLoader(this, this);
         }
         skinsLoader.execute();
     }
@@ -243,7 +246,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     @Override
-    public void onPostExecute(List<Skin> result) {
+    public void onPostExecute(ArrayList<Skin> result) {
         Log.d(TAG, "Call DisclaimerActivity.onPostExecute()");
         progressDialog.dismiss();
         ArrayList<Skin> skins = new ArrayList<>();

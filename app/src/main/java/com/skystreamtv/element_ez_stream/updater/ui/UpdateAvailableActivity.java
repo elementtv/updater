@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.Button;
 
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
@@ -29,9 +28,10 @@ import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapte
 import java.util.ArrayList;
 import java.util.List;
 
-public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate, GitHubHelper.GitHubCallbacks<ArrayList<Skin>> {
+public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate,
+        SkinsLoader.SkinsLoaderListener {
 
-    protected ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
     private List<Skin> skins;
     private RecyclerView recyclerView;
     private PlayerInstaller playerInstaller;
@@ -44,7 +44,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         setContentView(R.layout.activity_update_available);
 
         playerInstaller = new PlayerInstaller(this);
-        skinsLoader = new SkinsLoader(this);
+        skinsLoader = new SkinsLoader(this, this);
 
 
         Button playerButton = (Button) findViewById(R.id.skip_button);
@@ -98,7 +98,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
             installer.execute(selectedSkin.getDownloadUrl(), String.valueOf(selectedSkin.getId()),
                     String.valueOf(selectedSkin.getVersion()));
         } else {
-            Intent updateIntent = new Intent(this, UpdateActivity.class);
+            Intent updateIntent = new Intent(this, UpdateTypeActivity.class);
             updateIntent.putExtra(Constants.SERVICE_RESET, true);
             updateIntent.putExtra(Constants.SKINS, selectedSkin);
             startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
@@ -111,7 +111,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Checking for Available Updates");
         if (skinsLoader.hasRun()) {
-            skinsLoader = new SkinsLoader(this);
+            skinsLoader = new SkinsLoader(this, this);
         }
         skinsLoader.execute();
     }

@@ -22,36 +22,20 @@ import com.skystreamtv.element_ez_stream.updater.background.PlayerUpdaterService
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
+import java.lang.ref.WeakReference;
+
 public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivity, ServiceConnection {
 
     private static final String TAG = "UpdateActivity";
-    private static final String RETRY = "retry", TITLE = "title", STATE_TEXT = "state_text",
+    private static final String RETRY = "retry",
+            TITLE = "title",
+            STATE_TEXT = "state_text",
             PROGRESS = "progress";
+    protected final Messenger update_activity_messenger = new Messenger(new UpdateHandler(this));
     protected Messenger service_messenger = null;
     protected boolean is_service_bound;
     private TextView statusMessageTextView;
     private ProgressBar updateProgressBar;
-    protected final Messenger update_activity_messenger = new Messenger(new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case PlayerUpdaterService.MSG_UPDATE_READY:
-                    hideRetryButton();
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_PROGRESS:
-                    updateProgressBarPercent(msg.arg1);
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_CANCELLED:
-                    updateCancelled(msg);
-                    break;
-                case PlayerUpdaterService.MSG_UPDATE_COMPLETED:
-                    updateDone();
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    });
     private Button retryButton;
 
     @Override
@@ -91,6 +75,8 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent startIntent = getIntent();
             Log.d(TAG, "Get skin");
             Skin skin = startIntent.getParcelableExtra(Constants.SKINS);
+            boolean cleanInstall = startIntent.getBooleanExtra(Constants.CLEAN_INSTAL, false);
+            Log.d(TAG, "Clean Install: " + cleanInstall);
             setTitle(String.format(getString(R.string.updating_brand), skin.getName()));
             Log.d(TAG, "Reset view");
             resetView();
@@ -98,6 +84,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent serviceIntent = new Intent(this, PlayerUpdaterService.class);
             serviceIntent.putExtra(Constants.SERVICE_RESET, startIntent.getBooleanExtra(Constants.SERVICE_RESET, retrying));
             serviceIntent.putExtra(Constants.SKINS, skin);
+            serviceIntent.putExtra(Constants.CLEAN_INSTAL, cleanInstall);
             startService(serviceIntent);
         } catch (Exception e) {
             Log.d(TAG, Log.getStackTraceString(e));
@@ -106,7 +93,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString(TITLE, (String)getTitle());
+        outState.putString(TITLE, (String) getTitle());
         outState.putString(STATE_TEXT, statusMessageTextView.getText().toString());
         outState.putInt(PROGRESS, updateProgressBar.getProgress());
         outState.putInt(RETRY, retryButton.getVisibility());
@@ -116,7 +103,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     @Override
     protected void onStart() {
         super.onStart();
-        Intent start_intent  = getIntent();
+        Intent start_intent = getIntent();
         if (start_intent.getBooleanExtra("update_ready", false))
             hideRetryButton();
         else {
@@ -139,7 +126,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     public void onServiceConnected(ComponentName name, IBinder binder) {
         Log.d(TAG, "Called onServiceConnected()");
         service_messenger = new Messenger(binder);
-        try{
+        try {
             Message msg = Message.obtain(null, PlayerUpdaterService.MSG_REGISTER_CLIENT);
             msg.replyTo = update_activity_messenger;
             service_messenger.send(msg);
@@ -158,7 +145,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
                 msg.replyTo = update_activity_messenger;
                 service_messenger.send(msg);
             } catch (RemoteException | NullPointerException e) {
-                Log.d(TAG,  "The service was already disconnected");
+                Log.d(TAG, "The service was already disconnected");
             }
         }
         unbindService(this);
@@ -187,15 +174,15 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
         updateProgressBar.setProgress(0);
     }
 
-    protected void updateProgressBarPercent(int percent) {
+    public void updateProgressBarPercent(int percent) {
         if (percent <= 0)
             setStatusText(getString(R.string.starting_download));
-        else if (percent > 0  && percent <= 50)
+        else if (percent > 0 && percent <= 33)
             setStatusText(String.format(getString(R.string.downloading_new_version),
                     getString(R.string.player_name)));
-        else if (percent > 50  && percent <= 98)
+        else if (percent > 33 && percent <= 66)
             setStatusText(getString(R.string.decompressing_update));
-        else if (percent == 99)
+        else if (percent == 67)
             setStatusText(getString(R.string.applying_update));
         else if (percent == 100)
             setStatusText(getString(R.string.update_done));
@@ -204,14 +191,15 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     }
 
     @Override
-    public void errorAction(int action) {}
+    public void errorAction(int action) {
+    }
 
-    protected void hideRetryButton() {
+    public void hideRetryButton() {
         Button retryButton = (Button) findViewById(R.id.retryButton);
         retryButton.setVisibility(View.INVISIBLE);
     }
 
-    protected void updateCancelled(Message remoteMessage) {
+    public void updateCancelled(Message remoteMessage) {
         Log.d(TAG, "Call UpdateActivity.updateCancelled()");
         Bundle remoteData = remoteMessage.getData();
         remoteData.setClassLoader(getClassLoader());
@@ -224,7 +212,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
         showFailure(failString);
     }
 
-    protected void updateDone() {
+    public void updateDone() {
         Log.d("UpdateInfo", "Update Done");
         setResult(RESULT_OK);
         finish();
@@ -240,5 +228,35 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     public void onRetryButtonClick(View view) {
         Log.d(TAG, "Call UpdateActivity.onRetryButtonClick()");
         startServiceReset(true);
+    }
+
+    private static class UpdateHandler extends Handler {
+        private final WeakReference<UpdateActivity> service;
+
+        UpdateHandler(UpdateActivity service) {
+            this.service = new WeakReference<>(service);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            UpdateActivity updaterService = service.get();
+
+            switch (msg.what) {
+                case PlayerUpdaterService.MSG_UPDATE_READY:
+                    updaterService.hideRetryButton();
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_PROGRESS:
+                    updaterService.updateProgressBarPercent(msg.arg1);
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_CANCELLED:
+                    updaterService.updateCancelled(msg);
+                    break;
+                case PlayerUpdaterService.MSG_UPDATE_COMPLETED:
+                    updaterService.updateDone();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
     }
 }
