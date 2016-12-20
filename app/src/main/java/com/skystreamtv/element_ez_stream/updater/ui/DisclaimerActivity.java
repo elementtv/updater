@@ -220,6 +220,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
     public void onNextButtonClick(View nextButtonView) {
         if (!kodiInstalled) {
+            if (playerInstaller == null) playerInstaller = new PlayerInstaller(this);
             playerInstaller.installPlayer();
             AppInstaller appInstaller = new AppInstaller();
             appInstaller.init(this);
