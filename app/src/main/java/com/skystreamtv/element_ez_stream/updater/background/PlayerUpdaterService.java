@@ -140,10 +140,10 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     }
 
     protected void updateCompleted(boolean updated) {
+        sendCallbackMessage(Message.obtain(null, MSG_UPDATE_COMPLETED));
         if (updated) {
             PlayerInstaller.launchPlayer(this);
         }
-        sendCallbackMessage(Message.obtain(null, MSG_UPDATE_COMPLETED));
     }
 
     protected Boolean doUpdate() {

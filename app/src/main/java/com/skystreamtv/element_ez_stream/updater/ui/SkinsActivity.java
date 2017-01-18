@@ -3,13 +3,13 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterActivity,
+public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity,
         AdapterView.OnItemClickListener, SkinsLoader.SkinsLoaderListener {
 
     private static final String TAG = "SkinsActivity";
@@ -177,6 +177,7 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
 
         AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
         error_dialog.show();
+        styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
     }
 
     @Override

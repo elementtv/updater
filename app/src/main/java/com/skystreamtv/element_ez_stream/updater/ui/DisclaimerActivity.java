@@ -57,6 +57,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         setContentView(R.layout.activity_disclaimer);
 
         nextButton = (Button) findViewById(R.id.nextButton);
+        styleButton(nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
 
         if (ContextCompat.checkSelfPermission(this,
@@ -74,6 +75,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                         }
                     }).create();
             dialog.show();
+            styleButton(dialog.getButton(DialogInterface.BUTTON_POSITIVE));
         } else {
             completeSetup();
         }
@@ -110,6 +112,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                 AlertDialog dialog = Dialogs.buildErrorDialog(this, getString(R.string.external_storage_title),
                         getString(R.string.external_storage_required), ERROR_ACTION_CLOSE_APP);
                 dialog.show();
+                styleButton(dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
             }
         }
     }
@@ -129,6 +132,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                             getString(R.string.no_internet_title), getString(R.string.no_internet_info),
                             ERROR_ACTION_NO_ACTION);
                     noConnection.show();
+                    styleButton(noConnection.getButton(DialogInterface.BUTTON_NEUTRAL));
                 }
             }
         } else {
@@ -136,6 +140,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     getString(R.string.license_error),
                     getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
             licenseErrorDialog.show();
+            styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
         }
     }
 

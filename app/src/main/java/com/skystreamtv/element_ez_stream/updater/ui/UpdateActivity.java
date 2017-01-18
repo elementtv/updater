@@ -2,6 +2,7 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -46,6 +47,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
         statusMessageTextView = (TextView) findViewById(R.id.statusMessageTextView);
         updateProgressBar = (ProgressBar) findViewById(R.id.updateProgressBar);
         retryButton = (Button) findViewById(R.id.retryButton);
+        styleButton(retryButton);
 
         if (savedInstanceState == null) {
             startServiceReset(false);
@@ -166,6 +168,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     protected void errorDialog(final String title, final String message) {
         AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
         error_dialog.show();
+        styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
     }
 
     protected void resetView() {
