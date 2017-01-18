@@ -23,12 +23,10 @@ public class AppController extends Application {
         mInstance = this;
     }
 
-    private RequestQueue getRequestQueue() {
+    private void getRequestQueue() {
         if (mRequestQueue == null) {
             mRequestQueue = Volley.newRequestQueue(getApplicationContext());
         }
-
-        return mRequestQueue;
     }
 
     public ImageLoader getImageLoader() {

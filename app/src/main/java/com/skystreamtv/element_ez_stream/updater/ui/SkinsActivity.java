@@ -3,13 +3,13 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.controller.AppController;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
@@ -34,7 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterActivity, GitHubHelper.GitHubCallbacks<ArrayList<Skin>>, AdapterView.OnItemClickListener{
+public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity,
+        AdapterView.OnItemClickListener, SkinsLoader.SkinsLoaderListener {
 
     private static final String TAG = "SkinsActivity";
 
@@ -134,7 +134,7 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
                 return convertView;
             }
 
-            protected void setListItem(View listItemView, ListViewHolder holder, Skin skin) {
+            private void setListItem(View listItemView, ListViewHolder holder, Skin skin) {
                 boolean enabled = skin.isEnabled();
                 listItemView.setEnabled(enabled);
                 if (enabled) {
@@ -168,7 +168,7 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
     protected void loadListData() {
         Log.d(TAG, "Call SkinsActivity.loadListData()");
         progress_dialog.show();
-        skins_loader = new SkinsLoader(this);
+        skins_loader = new SkinsLoader(this, this);
         skins_loader.execute();
     }
 
@@ -177,6 +177,7 @@ public class SkinsActivity extends AppCompatActivity implements PlayerUpdaterAct
 
         AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
         error_dialog.show();
+        styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
     }
 
     @Override

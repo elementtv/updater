@@ -20,9 +20,6 @@
     <string name="file_exists">The requested destination file already exists.</string>
     <string name="github_error">Connection Error</string>
     <string name="github_internal_error">Internal error: something went wrong when processing remote information.</string>
-    <string name="github_password" />
-    <string name="github_repository">skystreamtv/updater</string>
-    <string name="github_username" />
     <string name="http_error">An HTTP error has occurred.</string>
     <string name="install_player">Install Media Player</string>
     <string name="insufficient_space">Insufficient storage space.</string>
@@ -75,4 +72,7 @@
     <string name="please_wait">Installing Updates. Please wait…</string>
     <string name="checking_for_updates">Checking for updates. Please wait…</string>
     <string name="installing_kodi">Installing Kodi. Please wait…</string>
+    <string name="fresh_install">Fresh Install</string>
+    <string name="save_user_settings">Save User Settings</string>
+    <string name="install_details">Fresh Install – Clicking on Fresh Install WILL completely wipe any personalization you have added to Kodi. This includes Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. ONLY click on Fresh Install if you wish to completely wipe Kodi and end up with a clean installation. All personalization will need to be reinstalled by the end user.\n\nSave User Settings – Clicking on Save User Settings will update everything in Kodi the same way Fresh Install does, but will save most personalization that the end user has installed. Save User Settings will keep Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. This is the best option for users who had added personalization to their Kodi. </string>
 </resources>
