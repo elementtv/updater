@@ -23,8 +23,8 @@
     <string name="http_error">An HTTP error has occurred.</string>
     <string name="install_player">Install Media Player</string>
     <string name="insufficient_space">Insufficient storage space.</string>
-    <string name="license_error">License Error</string>
-    <string name="license_message">You and your device have not been authorized to use this app. This app is for Element Media Players only! If you feel this is an error, please contact Element Support.</string>
+    <string name="license_error">For Element Customers Only!</string>
+    <string name="license_message">This application is only for genuine Element devices. If you are using any other device this program will not work. To purchase a genuine Element unit please visit www.streamelement.com</string>
     <string name="loading">Loading…</string>
     <string name="many_redirects">There were too many redirects.</string>
     <string name="missing_play_store">Missing Play Store</string>

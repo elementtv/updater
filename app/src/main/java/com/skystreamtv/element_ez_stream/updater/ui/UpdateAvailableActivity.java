@@ -3,7 +3,6 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -22,7 +21,6 @@ import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
-import com.skystreamtv.element_ez_stream.updater.utils.TextUtil;
 import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
 
 import java.util.ArrayList;
@@ -66,23 +64,23 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.HORIZONTAL));
         recyclerView.setAdapter(itemAdapter);
-        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),
-                new ClickListener() {
-                    @Override
-                    public void onClick(View view, int position) {
-                        final Skin skin = skins.get(position);
-                        dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
-                                .setTitle(R.string.update_details)
-                                .setMessage(TextUtil.fromHtml(skin.getDetails()))
-                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                })
-                                .show();
-                    }
-                }));
+//        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),
+//                new ClickListener() {
+//                    @Override
+//                    public void onClick(View view, int position) {
+//                        final Skin skin = skins.get(position);
+//                        dialog = new AlertDialog.Builder(UpdateAvailableActivity.this)
+//                                .setTitle(R.string.update_details)
+//                                .setMessage(TextUtil.fromHtml(skin.getDetails()))
+//                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialogInterface, int i) {
+//                                        dialogInterface.dismiss();
+//                                    }
+//                                })
+//                                .show();
+//                    }
+//                }));
     }
 
     private void update(Skin selectedSkin) {
