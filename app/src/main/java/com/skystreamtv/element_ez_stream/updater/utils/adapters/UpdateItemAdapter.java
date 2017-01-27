@@ -1,6 +1,9 @@
 package com.skystreamtv.element_ez_stream.updater.utils.adapters;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,7 +35,7 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
     }
 
     @Override
-    public void onBindViewHolder(ItemViewHolder holder, int position) {
+    public void onBindViewHolder(final ItemViewHolder holder, int position) {
         final Skin skin = skins.get(position);
         holder.name.setText(skin.getName());
         holder.details.setText(TextUtil.fromHtml(skin.getDetails()));
@@ -63,6 +66,18 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
                 }
             });
         }
+        holder.update.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    holder.update.setBackgroundColor(ContextCompat.getColor((Context) listener, R.color.colorPrimary));
+                    holder.update.setTextColor(Color.WHITE);
+                } else {
+                    holder.update.setBackgroundResource(android.R.drawable.btn_default);
+                    holder.update.setTextColor(Color.BLACK);
+                }
+            }
+        });
     }
 
     @Override

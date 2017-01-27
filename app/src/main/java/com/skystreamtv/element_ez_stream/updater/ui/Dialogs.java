@@ -7,10 +7,9 @@ import android.content.DialogInterface;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 
-@SuppressWarnings("unused")
-public class Dialogs {
+class Dialogs {
 
-    public static AlertDialog buildErrorDialog(Context context, String title, String message, final int action) {
+    static AlertDialog buildErrorDialog(Context context, String title, String message, final int action) {
         final Activity this_activity = (Activity) context;
         AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this_activity);
         dialog_builder.setTitle(title)
@@ -20,20 +19,6 @@ public class Dialogs {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.dismiss();
                         ((PlayerUpdaterActivity)this_activity).errorAction(action);
-                    }
-                });
-        return dialog_builder.create();
-    }
-
-    public static AlertDialog buildInfoDialog(Context context, String title, String message) {
-        final Activity this_activity = (Activity) context;
-        AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this_activity);
-        dialog_builder.setTitle(title)
-                .setMessage(message)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setNeutralButton(R.string.close_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
                     }
                 });
         return dialog_builder.create();

@@ -28,19 +28,19 @@
 
         <Button
             android:id="@+id/fresh_button"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/fresh_install" />
+            android:text="@string/fresh_install"
+            tools:ignore="ButtonStyle" />
 
         <Button
             android:id="@+id/user_settings_button"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/save_user_settings" />
+            android:text="@string/save_user_settings"
+            tools:ignore="ButtonStyle" />
 
     </LinearLayout>
 

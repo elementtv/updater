@@ -23,6 +23,7 @@ public class UpdateTypeActivity extends BaseActivity {
                 goToNextActivity(true);
             }
         });
+        styleButton(freshInstall);
         Button saveUserInstall = (Button) findViewById(R.id.user_settings_button);
         saveUserInstall.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -30,6 +31,7 @@ public class UpdateTypeActivity extends BaseActivity {
                 goToNextActivity(false);
             }
         });
+        styleButton(saveUserInstall);
     }
 
     private void goToNextActivity(boolean cleanInstall) {
