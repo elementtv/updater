@@ -120,7 +120,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        if (!isLicensed()) {
+        if (isLicensed()) {
             enableButtons();
             boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
             if (checkForUpdates) {
