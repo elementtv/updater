@@ -1,7 +1,6 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -61,6 +60,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.HORIZONTAL));
         recyclerView.setAdapter(itemAdapter);
+        itemAdapter.setFocus();
     }
 
     private void update(Skin selectedSkin) {

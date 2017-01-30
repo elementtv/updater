@@ -22,10 +22,15 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
 
     private List<Skin> skins;
     private DoUpdate listener;
+    private Button button;
 
     public UpdateItemAdapter(List<Skin> skins, DoUpdate listener) {
         this.skins = skins;
         this.listener = listener;
+    }
+
+    public void setFocus() {
+        if (button != null) button.requestFocus();
     }
 
     @Override
@@ -78,6 +83,7 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
                 }
             }
         });
+        if (position == 0) this.button = holder.update;
     }
 
     @Override

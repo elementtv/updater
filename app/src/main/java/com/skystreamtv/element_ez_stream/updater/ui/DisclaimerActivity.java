@@ -82,7 +82,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void completeSetup() {
-
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this, this);
         progressDialog = new ProgressDialog(this);
@@ -101,6 +100,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             playerInstallTextView.setText("");
             nextButton.setText(R.string.continue_button);
         }
+        nextButton.requestFocus();
     }
 
     @Override
@@ -120,7 +120,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        if (isLicensed()) {
+        if (!isLicensed()) {
             enableButtons();
             boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
             if (checkForUpdates) {
@@ -160,6 +160,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                             .setNegativeButton(R.string.not_now, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     dialog.dismiss();
+                                    nextButton.requestFocus();
                                 }
                             }).setPositiveButton(R.string.install_update, new DialogInterface.OnClickListener() {
                         @Override
