@@ -186,7 +186,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                 || Build.MODEL.equals("Element-Ti5")
                 || Build.MODEL.equals("Element Ti5")
                 || Build.MODEL.equals("Element-Ti8")
-                || Build.MODEL.equals("Element Ti8"));
+                || Build.MODEL.equals("Element Ti8")
+                || Build.MODEL.equals("Element Ti4 Mini"));
     }
 
     private void enableButtons() {

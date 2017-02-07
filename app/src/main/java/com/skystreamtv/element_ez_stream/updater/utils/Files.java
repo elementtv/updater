@@ -1,16 +1,12 @@
 package com.skystreamtv.element_ez_stream.updater.utils;
 
-import android.os.Environment;
-
 import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,19 +103,20 @@ public class Files {
             throw new IOException("Failed to list contents of " + srcDir);
         }
 
-        File root = Environment.getExternalStorageDirectory();
-        BufferedWriter out;
-        File logFile = new File(root, "log.txt");
-        FileWriter logwriter = new FileWriter(logFile, true);
-        out = new BufferedWriter(logwriter);
+//        File root = Environment.getExternalStorageDirectory();
+//        BufferedWriter out;
+//        File logFile = new File(root, "log.txt");
+//        FileWriter logwriter = new FileWriter(logFile, true);
+//        out = new BufferedWriter(logwriter);
 
         for (File file : files) {
             if (file.getName().contains("addon_data") || file.getName().contains("favorites") ||
                     file.getName().contains("profile") || file.getCanonicalPath().contains("addon_data") ||
-                    file.getName().contains("sources") || file.getName().contains("onechannel"))
+                    (file.getName().contains("sources") && !file.getName().contains("resources")) ||
+                    file.getName().contains("onechannel"))
                 continue;
 
-            out.write(file.getCanonicalPath() + "\n");
+//            out.write(file.getCanonicalPath() + "\n");
 
             File copiedFile = new File(destDir, file.getName());
             if (exclusionList == null || !exclusionList.contains(file.getCanonicalPath())) {
@@ -130,7 +127,7 @@ public class Files {
                 }
             }
         }
-        out.close();
+//        out.close();
     }
 
     private void doCopyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException {
