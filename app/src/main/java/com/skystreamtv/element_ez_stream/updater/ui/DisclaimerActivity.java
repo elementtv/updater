@@ -181,9 +181,12 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private boolean isLicensed() {
-        return (Build.MODEL.equals("Element-Ti4") ||
-                Build.MODEL.equals("Element-Ti5")
-                || Build.MODEL.equals("Element-Ti8"));
+        return (Build.MODEL.equals("Element-Ti4")
+                || Build.MODEL.equals("Element Ti4")
+                || Build.MODEL.equals("Element-Ti5")
+                || Build.MODEL.equals("Element Ti5")
+                || Build.MODEL.equals("Element-Ti8")
+                || Build.MODEL.equals("Element Ti8"));
     }
 
     private void enableButtons() {
