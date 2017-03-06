@@ -14,7 +14,7 @@ public class Constants {
     public static final String SKINS = "skins";
     public static final String PLAYER_INSTALLED = "PLAYER_INSTALLED";
     public static final String CHECK_FOR_UPDATES = "checkForUpdates";
-    public static final String CLEAN_INSTAL = "cleanInstall";
+    public static final String CLEAN_INSTALL = "cleanInstall";
 
 
     public static final int SKIN_UPDATE = 1001;

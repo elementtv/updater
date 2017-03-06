@@ -3,6 +3,7 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +20,7 @@ import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
 import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +32,15 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
     private RecyclerView recyclerView;
     private PlayerInstaller playerInstaller;
     private SkinsLoader skinsLoader;
+    private File PLAYER_CONF_DIRECTORY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_available);
+
+        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
+                "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
 
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this, this);
@@ -75,9 +81,24 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
             installer.execute(selectedSkin.getDownloadUrl(), String.valueOf(selectedSkin.getId()),
                     String.valueOf(selectedSkin.getVersion()));
         } else {
-            Intent updateIntent = new Intent(this, UpdateTypeActivity.class);
-            updateIntent.putExtra(Constants.SERVICE_RESET, true);
+            File addons_destination = new File(PLAYER_CONF_DIRECTORY, "addons");
+            File userdata_destination = new File(PLAYER_CONF_DIRECTORY, "userdata");
+
+            Intent updateIntent;
+
+            if (addons_destination.exists() && addons_destination.listFiles().length > 0
+                    && userdata_destination.exists() && userdata_destination.listFiles().length > 0) {
+                updateIntent = new Intent(this, UpdateTypeActivity.class);
+                startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
+            } else {
+                updateIntent = new Intent(this, UpdateActivity.class);
+                updateIntent.putExtra(Constants.CLEAN_INSTALL, true);
+
+                startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
+            }
+
             updateIntent.putExtra(Constants.SKINS, selectedSkin);
+            updateIntent.putExtra(Constants.SERVICE_RESET, true);
             startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
         }
     }

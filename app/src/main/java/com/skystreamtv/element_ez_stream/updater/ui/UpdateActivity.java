@@ -77,7 +77,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent startIntent = getIntent();
             Log.d(TAG, "Get skin");
             Skin skin = startIntent.getParcelableExtra(Constants.SKINS);
-            boolean cleanInstall = startIntent.getBooleanExtra(Constants.CLEAN_INSTAL, false);
+            boolean cleanInstall = startIntent.getBooleanExtra(Constants.CLEAN_INSTALL, false);
             Log.d(TAG, "Clean Install: " + cleanInstall);
             setTitle(String.format(getString(R.string.updating_brand), skin.getName()));
             Log.d(TAG, "Reset view");
@@ -86,7 +86,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Intent serviceIntent = new Intent(this, PlayerUpdaterService.class);
             serviceIntent.putExtra(Constants.SERVICE_RESET, startIntent.getBooleanExtra(Constants.SERVICE_RESET, retrying));
             serviceIntent.putExtra(Constants.SKINS, skin);
-            serviceIntent.putExtra(Constants.CLEAN_INSTAL, cleanInstall);
+            serviceIntent.putExtra(Constants.CLEAN_INSTALL, cleanInstall);
             startService(serviceIntent);
         } catch (Exception e) {
             Log.d(TAG, Log.getStackTraceString(e));

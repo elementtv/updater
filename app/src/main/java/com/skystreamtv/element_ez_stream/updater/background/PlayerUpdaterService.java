@@ -67,7 +67,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "Service: indent received");
         if (intent.getBooleanExtra("SERVICE_RESET", false)) {
-            cleanInstall = intent.getBooleanExtra(Constants.CLEAN_INSTAL, false);
+            cleanInstall = intent.getBooleanExtra(Constants.CLEAN_INSTALL, false);
             Log.d(TAG, "Clean Install: " + cleanInstall);
             Log.d(TAG, "Service: reset.");
             startUpdate(intent);
@@ -86,7 +86,8 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
         service_status = Status.PENDING;
         updateReady();
         this.download_manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
+        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/"
+                + getString(R.string.player_id) + "/files/.kodi");
         this.skin = intent.getParcelableExtra(Constants.SKINS);
         service_status = Status.RUNNING;
         boolean result = doUpdate();

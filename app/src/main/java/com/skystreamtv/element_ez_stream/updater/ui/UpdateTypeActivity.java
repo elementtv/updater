@@ -38,7 +38,7 @@ public class UpdateTypeActivity extends BaseActivity {
         Skin skin = getIntent().getParcelableExtra(Constants.SKINS);
         Intent updateIntent = new Intent(this, UpdateActivity.class);
         updateIntent.putExtra(Constants.SERVICE_RESET, true);
-        updateIntent.putExtra(Constants.CLEAN_INSTAL, cleanInstall);
+        updateIntent.putExtra(Constants.CLEAN_INSTALL, cleanInstall);
         updateIntent.putExtra(Constants.SKINS, skin);
         startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
     }
