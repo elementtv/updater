@@ -54,11 +54,11 @@ public class PlayerInstaller {
         }
     }
 
-    public void installPlayer() {
+    public void installPlayer(String kodiUrl) {
         DisclaimerActivity disclaimer_activity = (DisclaimerActivity) context;
         try {
             Intent market_intent = new Intent(Intent.ACTION_VIEW);
-            market_intent.setData(Uri.parse("https://www.dropbox.com/s/cjch4vr34fk0jht/kodi-160-elitemods-032816-skinmod.apk?dl=1"));
+            market_intent.setData(Uri.parse(kodiUrl));
             disclaimer_activity.startActivity(market_intent);
         } catch (ActivityNotFoundException e) {
             disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),

@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.OSHelper;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -43,7 +43,7 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
             Log.d(TAG, "Get GitHub Repo");
             GHRepository repository = GitHubHelper.connectRepository();
             Log.d(TAG, "Getting location.json");
-            GHContent content = repository.getFileContent(Constants.LOCATION_JSON_FILE);
+            GHContent content = repository.getFileContent(OSHelper.getLocationsFile());
             Log.d(TAG, "Prepare JSON reader for location.json");
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             ArrayList<Skin> list = new ArrayList<>();

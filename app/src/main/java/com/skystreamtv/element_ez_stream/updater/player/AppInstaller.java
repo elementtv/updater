@@ -14,6 +14,8 @@ import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
 import com.skystreamtv.element_ez_stream.updater.model.App;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.OSHelper;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -32,9 +34,11 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
 
     private Context context;
     private ProgressDialog progressDialog;
+    private int kodiVersionBeingInstalled;
 
-    public void init(Context context) {
+    public void init(Context context, int kodiVersionBeingInstalled) {
         this.context = context;
+        this.kodiVersionBeingInstalled = kodiVersionBeingInstalled;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
         super.onPostExecute(aVoid);
         progressDialog.dismiss();
         progressDialog.setProgress(0);
+        PreferenceHelper.savePreference(context, Constants.CURRENT_KODI_VERSION, kodiVersionBeingInstalled);
     }
 
     @Override
@@ -69,7 +74,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
             Log.d(TAG, "Get GitHub Repo");
             GHRepository repository = GitHubHelper.connectRepository();
             Log.d(TAG, "Getting apps.json");
-            GHContent content = repository.getFileContent(Constants.KODI_LOCATION);
+            GHContent content = repository.getFileContent(OSHelper.getKodiApp());
             Log.d(TAG, "Prepare JSON reader for kodi_app.json");
             JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
             Log.d(TAG, "Start reading JSON data");

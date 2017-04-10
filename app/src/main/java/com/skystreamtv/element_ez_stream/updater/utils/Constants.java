@@ -7,6 +7,7 @@ public class Constants {
 
     public static final String UPDATER_PREFERENCES = "updaterPreferences";
     public static final String FIRST_TIME_CONNECTED = "firstTimeConnected";
+    public static final String CURRENT_KODI_VERSION = "currentKodiVersion";
 
     // intents
     public static final String EXIT = "EXIT";
@@ -22,9 +23,13 @@ public class Constants {
 
     //element files
     public static final String UPDATE_JSON_FILE = "/element_update.json";
+
     public static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
     public static final String KODI_LOCATION = "/element_kodi_app.json";
 
+    static final String LOCATION_JSON_FILE_V16 = "/element_ez_locations_v16.json";
+    static final String KODI_LOCATION_V16 = "/element_kodi_app_v16.json";
+
     // preferences
-    public static final String SHARED_PREFS_FILE = "element";
+    static final String SHARED_PREFS_FILE = "element";
 }

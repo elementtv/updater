@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.BuildConfig;
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.KodiUpdater;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
 import com.skystreamtv.element_ez_stream.updater.background.Updater;
@@ -29,9 +30,11 @@ import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.util.ArrayList;
 
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.CURRENT_KODI_VERSION;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_INSTALLED;
@@ -48,6 +51,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private Button nextButton;
     private TextView playerInstallTextView;
     private boolean kodiInstalled;
+    private App kodiApp;
+    private boolean updateKodi = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +64,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         nextButton = (Button) findViewById(R.id.nextButton);
         styleButton(nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
+        kodiApp = new App();
+        kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, 16));
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -96,6 +103,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             playerInstallTextView.setText(String.format(getString(R.string.player_not_installed_message),
                     getString(R.string.player_name)));
             nextButton.setText(R.string.install_player);
+        } else if (updateKodi) {
+            playerInstallTextView.setText(R.string.update_kodi_info);
+            nextButton.setText(R.string.update_media_player);
         } else {
             playerInstallTextView.setText("");
             nextButton.setText(R.string.continue_button);
@@ -120,12 +130,13 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        if (isLicensed()) {
+        if (!isLicensed()) {
             enableButtons();
             boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
             if (checkForUpdates) {
                 if (Connectivity.isConnectionAvailable(this)) {
                     getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
+                    checkForKodiUpdates();
                     checkForUpdates();
                 } else {
                     AlertDialog noConnection = Dialogs.buildErrorDialog(this,
@@ -142,6 +153,24 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             licenseErrorDialog.show();
             styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
         }
+    }
+
+    private void checkForKodiUpdates() {
+        KodiUpdater kodiUpdater = new KodiUpdater();
+        kodiUpdater.setListener(new KodiUpdater.KodiUpdateListener() {
+            @Override
+            public void onCheckComplete(App kodi) {
+                Log.e(TAG, "On Check Complete");
+                kodiApp = kodi;
+                Log.e(TAG, "URL: " + kodiApp.getDownloadUrl());
+                if (kodiApp.getVersion() < kodi.getVersion()) {
+                    updateKodi = true;
+                    completeSetup();
+                }
+
+            }
+        });
+        kodiUpdater.execute();
     }
 
     private void checkForUpdates() {
@@ -228,11 +257,11 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     public void onNextButtonClick(View nextButtonView) {
-        if (!kodiInstalled) {
+        if (!kodiInstalled || updateKodi) {
             if (playerInstaller == null) playerInstaller = new PlayerInstaller(this);
-            playerInstaller.installPlayer();
+            playerInstaller.installPlayer(kodiApp.getDownloadUrl());
             AppInstaller appInstaller = new AppInstaller();
-            appInstaller.init(this);
+            appInstaller.init(this, kodiApp.getVersion());
             appInstaller.execute();
         } else {
             updateOrLaunchPlayer();

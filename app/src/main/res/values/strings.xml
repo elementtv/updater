@@ -75,4 +75,6 @@
     <string name="fresh_install">Fresh Install</string>
     <string name="save_user_settings">Save User Settings</string>
     <string name="install_details">Fresh Install – Clicking on Fresh Install WILL completely wipe any personalization you have added to Kodi. This includes Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. ONLY click on Fresh Install if you wish to completely wipe Kodi and end up with a clean installation. All personalization will need to be reinstalled by the end user.\n\nSave User Settings – Clicking on Save User Settings will update everything in Kodi the same way Fresh Install does, but will save most personalization that the end user has installed. Save User Settings will keep Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. This is the best option for users who had added personalization to their Kodi. </string>
+    <string name="update_kodi_info">A new version of Kodi is available. Please update to continue</string>
+    <string name="update_media_player">Update Media Player</string>
 </resources>
