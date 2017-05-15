@@ -18,6 +18,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.CustomEvent;
 import com.skystreamtv.element_ez_stream.updater.BuildConfig;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.KodiUpdater;
@@ -60,6 +63,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         if (getIntent().getBooleanExtra(EXIT, false))
             finish();
         setContentView(R.layout.activity_disclaimer);
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("Startup Screen"));
 
         nextButton = (Button) findViewById(R.id.nextButton);
         styleButton(nextButton);
@@ -131,6 +136,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     protected void onPostResume() {
         super.onPostResume();
         if (isLicensed()) {
+            Answers.getInstance().logCustom(new CustomEvent("Licensed")
+                    .putCustomAttribute("Licensed", "True")
+                    .putCustomAttribute("Device Type", Build.MODEL));
             enableButtons();
             boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
             if (checkForUpdates) {
@@ -147,6 +155,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                 }
             }
         } else {
+            Answers.getInstance().logCustom(new CustomEvent("Licensed")
+                    .putCustomAttribute("Licensed", "False")
+                    .putCustomAttribute("Device Type", Build.MODEL));
             AlertDialog licenseErrorDialog = Dialogs.buildErrorDialog(this,
                     getString(R.string.license_error),
                     getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
@@ -188,12 +199,17 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .setNegativeButton(R.string.not_now, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
+                                    Answers.getInstance().logCustom(new CustomEvent("Update application")
+                                            .putCustomAttribute("Updated", "Update Skipped"));
                                     dialog.dismiss();
                                     nextButton.requestFocus();
                                 }
                             }).setPositiveButton(R.string.install_update, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            Answers.getInstance().logCustom(new CustomEvent("Update application")
+                                    .putCustomAttribute("Updated", "Update Installed")
+                                    .putCustomAttribute("Version Installed", "v:" + update.getVersion()));
                             UpdateInstaller installer = new UpdateInstaller();
                             installer.init(DisclaimerActivity.this, new UpdateInstaller.UpdateCompleteListener() {
                                 @Override

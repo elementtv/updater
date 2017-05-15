@@ -21,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.controller.AppController;
@@ -51,6 +53,7 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
         Log.d(TAG, "Call SkinsActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_skins);
+        Answers.getInstance().logContentView(new ContentViewEvent().putContentName("Add-Ons View"));
         setTitle(getString(R.string.select_brand));
         progress_dialog = new ProgressDialog(this);
         progress_dialog.setMessage(getString(R.string.loading));

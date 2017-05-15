@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
@@ -41,6 +43,8 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
 
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
                 "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("Update/Install Kodi"));
 
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this, this);

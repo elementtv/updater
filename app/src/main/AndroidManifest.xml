@@ -67,6 +67,10 @@
         <activity android:name=".ui.UpdateAvailableActivity" />
         <activity android:name=".dialogs.OpenActivity" />
         <activity android:name=".ui.UpdateTypeActivity" />
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="3a9d89fe3fbb49780ce551de1b441dff9fd3fbf7" />
     </application>
 
 </manifest>

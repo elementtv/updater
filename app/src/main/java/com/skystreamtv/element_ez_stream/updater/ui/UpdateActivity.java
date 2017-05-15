@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.background.FailureReason;
 import com.skystreamtv.element_ez_stream.updater.background.PlayerUpdaterService;
@@ -83,6 +85,9 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Log.d(TAG, "Reset view");
             resetView();
             Log.d(TAG, "Create service intent");
+            Answers.getInstance().logCustom(new CustomEvent("Installing Ad-on")
+                    .putCustomAttribute("Name", skin.getName())
+                    .putCustomAttribute("Clean Install", "" + cleanInstall));
             Intent serviceIntent = new Intent(this, PlayerUpdaterService.class);
             serviceIntent.putExtra(Constants.SERVICE_RESET, startIntent.getBooleanExtra(Constants.SERVICE_RESET, retrying));
             serviceIntent.putExtra(Constants.SKINS, skin);
