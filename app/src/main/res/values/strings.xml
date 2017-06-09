@@ -31,8 +31,8 @@
     <string name="next_button">Next</string>
     <string name="no_device">No external storage device was found.</string>
     <string name="play_store_not_installed">It seems that Play Store is not installed in your device. Please, install Google Apps.</string>
-    <string name="player_id">org.xbmc.kodi</string>
-    <string name="player_name">Kodi</string>
+    <string name="player_id">org.xbmc.ftmc</string>
+    <string name="player_name">Media Center</string>
     <string name="player_not_installed_message">%s is not installed. You must proceed to install it before continue.</string>
     <string name="player_not_installed_title">Player not installed</string>
     <string name="retry_button">Retry</string>
@@ -47,7 +47,7 @@
     <string name="update_not_clean">Failed to apply a clean update to the media player. Please, contact our support team.</string>
     <string name="update_tag">Failed to mark the newly applied update as the last update. Please, contact our support team.</string>
     <string name="updating_brand">Updating build: %s</string>
-    <string name="welcome_text">Disclaimer: By downloading or using this app you are agreeing that Element takes no responsibility for the content or addons included within. Element does not host, distribute, hold or have any control over any content provided by any addon. It is the users responsibility to ensure they are not selling, distributing or downloading any copyrighted material from any addons - please ensure the end user checks the legalities of this use within their country. Element does not provide any support on any add-ons within the KODI application - Element is not affiliated with KODI.</string>
+    <string name="welcome_text">Disclaimer: By downloading or using this app you are agreeing that Element takes no responsibility for the content or addons included within. Element does not host, distribute, hold or have any control over any content provided by any addon. It is the users responsibility to ensure they are not selling, distributing or downloading any copyrighted material from any addons - please ensure the end user checks the legalities of this use within their country. Element does not provide any support on any add-ons within the Media Center application - Element is not affiliated with Media Center.</string>
     <string name="first_connect_message">An internet connection has been established. Would you like to check for updates?</string>
     <string name="not_now">No</string>
     <string name="remind_me_later">Later</string>
@@ -71,10 +71,10 @@
     <string name="new_version_app_info">A new version of the Updater Application is available. Would you like to update now?</string>
     <string name="please_wait">Installing Updates. Please wait…</string>
     <string name="checking_for_updates">Checking for updates. Please wait…</string>
-    <string name="installing_kodi">Installing Kodi. Please wait…</string>
+    <string name="installing_kodi">Installing Media Center. Please wait…</string>
     <string name="fresh_install">Fresh Install</string>
     <string name="save_user_settings">Save User Settings</string>
-    <string name="install_details">Fresh Install – Clicking on Fresh Install WILL completely wipe any personalization you have added to Kodi. This includes Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. ONLY click on Fresh Install if you wish to completely wipe Kodi and end up with a clean installation. All personalization will need to be reinstalled by the end user.\n\nSave User Settings – Clicking on Save User Settings will update everything in Kodi the same way Fresh Install does, but will save most personalization that the end user has installed. Save User Settings will keep Real Debrid accounts, Trakt accounts, favorites within Kodi, favorites within addons, additional addons that you have installed, and background images you have added. This is the best option for users who had added personalization to their Kodi. </string>
-    <string name="update_kodi_info">A new version of Kodi is available. Please update to continue</string>
+    <string name="install_details">Fresh Install – Clicking on Fresh Install WILL completely wipe any personalization you have added to Media Center. This includes Real Debrid accounts, Trakt accounts, favorites within Media Center, favorites within addons, additional addons that you have installed, and background images you have added. ONLY click on Fresh Install if you wish to completely wipe Media Center and end up with a clean installation. All personalization will need to be reinstalled by the end user.\n\nSave User Settings – Clicking on Save User Settings will update everything in Media Center the same way Fresh Install does, but will save most personalization that the end user has installed. Save User Settings will keep Real Debrid accounts, Trakt accounts, favorites within Media Center, favorites within addons, additional addons that you have installed, and background images you have added. This is the best option for users who had added personalization to their Media Center. </string>
+    <string name="update_kodi_info">A new version of Media Center is available. Please update to continue</string>
     <string name="update_media_player">Update Media Player</string>
 </resources>

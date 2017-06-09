@@ -34,6 +34,8 @@ import java.lang.ref.WeakReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
+
 public class PlayerUpdaterService extends IntentService implements Files.ProgressListener {
 
     public static final int MSG_REGISTER_CLIENT = 1;
@@ -87,7 +89,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
         updateReady();
         this.download_manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/"
-                + getString(R.string.player_id) + "/files/.kodi");
+                + getString(R.string.player_id) + PLAYER_FILE_LOCATION);
         this.skin = intent.getParcelableExtra(Constants.SKINS);
         service_status = Status.RUNNING;
         boolean result = doUpdate();
@@ -345,8 +347,8 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     protected boolean applyPlayerConfiguration() {
         Log.d(TAG, "Call applyPlayerConfiguration()");
         File unzipped_directory = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "media_player_update");
-        File addons_origin = new File(unzipped_directory, "/files/.kodi/addons");
-        File userdata_origin = new File(unzipped_directory, "/files/.kodi/userdata");
+        File addons_origin = new File(unzipped_directory, PLAYER_FILE_LOCATION + "/addons");
+        File userdata_origin = new File(unzipped_directory, PLAYER_FILE_LOCATION + "/userdata");
         if (userdata_origin.exists()) {
             Log.e(TAG, "Origin Directory");
             for (File file : userdata_origin.listFiles()) {
@@ -449,7 +451,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
         publishProgress(progress);
     }
 
-    public enum Status {NEW, PENDING, RUNNING, FINISHED, CANCELED}
+    private enum Status {NEW, PENDING, RUNNING, FINISHED, CANCELED}
 
     private static class MessengerHandler extends Handler {
         private final WeakReference<PlayerUpdaterService> service;

@@ -156,8 +156,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             }
         } else {
             Answers.getInstance().logCustom(new CustomEvent("Licensed")
-                    .putCustomAttribute("Licensed", "False")
-                    .putCustomAttribute("Device Type", Build.MODEL));
+                    .putCustomAttribute("Licensed", "False - " + Build.MODEL));
             AlertDialog licenseErrorDialog = Dialogs.buildErrorDialog(this,
                     getString(R.string.license_error),
                     getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
@@ -171,12 +170,12 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         kodiUpdater.setListener(new KodiUpdater.KodiUpdateListener() {
             @Override
             public void onCheckComplete(App kodi) {
-                Log.e(TAG, "On Check Complete");
-                kodiApp = kodi;
-                Log.e(TAG, "URL: " + kodiApp.getDownloadUrl());
                 if (kodiApp.getVersion() < kodi.getVersion()) {
                     updateKodi = true;
+                    kodiApp = kodi;
                     completeSetup();
+                } else {
+                    kodiApp = kodi;
                 }
 
             }

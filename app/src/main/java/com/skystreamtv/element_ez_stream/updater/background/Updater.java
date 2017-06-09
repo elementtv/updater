@@ -52,9 +52,13 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     @Override
     protected void onPostExecute(App app) {
         super.onPostExecute(app);
+        if (app == null) {
+            app = new App();
+            app.setVersion(0);
+        }
         progressDialog.dismiss();
         progressDialog.setProgress(0);
-        Log.d(TAG, "Version: " + app.getVersion());
+        Log.d(TAG, "Updater Version: " + app.getVersion());
         if (listener != null) listener.onCheckComplete(app);
     }
 

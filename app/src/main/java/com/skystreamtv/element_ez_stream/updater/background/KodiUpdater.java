@@ -34,8 +34,11 @@ public class KodiUpdater extends AsyncTask<Void, Integer, App> {
     @Override
     protected void onPostExecute(App kodi) {
         super.onPostExecute(kodi);
-        Log.e(TAG, "Kodi Version: " + kodi.getVersion());
-        Log.e(TAG, "Kodi URL: " + kodi.getDownloadUrl());
+        if (kodi == null) {
+            kodi = new App();
+            kodi.setVersion(0);
+        }
+        Log.e(TAG, "Media Center Version: " + kodi.getVersion());
         if (listener != null) listener.onCheckComplete(kodi);
     }
 

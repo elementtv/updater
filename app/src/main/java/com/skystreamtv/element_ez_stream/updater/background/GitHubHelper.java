@@ -10,8 +10,8 @@ import java.io.IOException;
 public class GitHubHelper {
 
     private static final String REPOSITORY = "skystreamtv/updater";
-    private static final String USERNAME = "";
-    private static final String PASSWORD = "";
+    private static final String USERNAME = "skystreamtv";
+    private static final String PASSWORD = "5kys7r34mtv";
     private static GHRepository repository;
 
     public static GHRepository connectRepository() throws IOException {

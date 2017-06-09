@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
+
 public class PlayerInstaller {
 
     private static final String TAG = "PlayerInstaller";
@@ -31,7 +33,8 @@ public class PlayerInstaller {
     public PlayerInstaller(Context context) {
         this.context = context;
         this.package_manager = context.getPackageManager();
-        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/" + context.getString(R.string.player_id) + "/files/.kodi");
+        PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
+                "Android/data/" + context.getString(R.string.player_id) + PLAYER_FILE_LOCATION);
     }
 
     public static void launchPlayer(Context context) {
@@ -63,9 +66,11 @@ public class PlayerInstaller {
         } catch (ActivityNotFoundException e) {
             disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),
                     context.getString(R.string.play_store_not_installed));
+        } catch (NullPointerException exception) {
+            disclaimer_activity.showErrorDialog("Missing URL", "A download URL could not be found. Please try again later.");
         }
 
-        Toast.makeText(context, "Please wait Kodi media player is installing", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Please wait while Media Center player is installing", Toast.LENGTH_SHORT).show();
     }
 
     private Skin getInstalledSkin() {

@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
+
 public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate,
         SkinsLoader.SkinsLoaderListener {
 
@@ -33,7 +35,6 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
     private List<Skin> skins;
     private RecyclerView recyclerView;
     private PlayerInstaller playerInstaller;
-    private SkinsLoader skinsLoader;
     private File PLAYER_CONF_DIRECTORY;
 
     @Override
@@ -42,13 +43,11 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         setContentView(R.layout.activity_update_available);
 
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
-                "Android/data/" + getString(R.string.player_id) + "/files/.kodi");
+                "Android/data/" + getString(R.string.player_id) + PLAYER_FILE_LOCATION);
         Answers.getInstance().logContentView(new ContentViewEvent()
                 .putContentName("Update/Install Kodi"));
 
         playerInstaller = new PlayerInstaller(this);
-        skinsLoader = new SkinsLoader(this, this);
-
 
         Button playerButton = (Button) findViewById(R.id.skip_button);
         playerButton.setOnClickListener(new View.OnClickListener() {
@@ -112,9 +111,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         Log.d("UpdateInfo", "OnActivityResult");
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Checking for Available Updates");
-        if (skinsLoader.hasRun()) {
-            skinsLoader = new SkinsLoader(this, this);
-        }
+        SkinsLoader skinsLoader = new SkinsLoader(this, this);
         skinsLoader.execute();
     }
 
