@@ -67,10 +67,12 @@ public class PlayerInstaller {
             disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),
                     context.getString(R.string.play_store_not_installed));
         } catch (NullPointerException exception) {
-            disclaimer_activity.showErrorDialog("Missing URL", "A download URL could not be found. Please try again later.");
+            disclaimer_activity.showErrorDialog(context.getString(R.string.something_went_wrong),
+                    context.getString(R.string.try_again_later));
         }
 
-        Toast.makeText(context, "Please wait while Media Center player is installing", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, R.string.please_wait_for_instal,
+                Toast.LENGTH_SHORT).show();
     }
 
     private Skin getInstalledSkin() {

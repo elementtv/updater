@@ -14,16 +14,17 @@
     <ImageView
         android:id="@+id/logoImageView"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="175dp"
         android:layout_weight="25"
         android:contentDescription="@string/app_logo"
+        android:paddingBottom="8dp"
         android:scaleType="fitCenter"
         android:src="@drawable/inner" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="1.5"
         android:text="@string/welcome_text"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
         android:textColor="@color/primaryDarkMaterialDark" />

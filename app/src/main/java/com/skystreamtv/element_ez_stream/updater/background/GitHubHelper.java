@@ -2,6 +2,8 @@ package com.skystreamtv.element_ez_stream.updater.background;
 
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
@@ -28,6 +30,7 @@ public class GitHubHelper {
                 repository = github.getRepository(REPOSITORY);
             } catch (Exception e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);
             }
             Log.d("PlayerUpdater", "Got it");
         }

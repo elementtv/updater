@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.App;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
@@ -92,6 +93,7 @@ public class Updater extends AsyncTask<Void, Integer, App> {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
         return null;
