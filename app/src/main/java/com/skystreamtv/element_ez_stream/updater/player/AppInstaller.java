@@ -37,6 +37,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     private int kodiVersionBeingInstalled;
 
     public void init(Context context, int kodiVersionBeingInstalled) {
+        Log.e("AppInstaller", "Init version: " + kodiVersionBeingInstalled);
         this.context = context;
         this.kodiVersionBeingInstalled = kodiVersionBeingInstalled;
     }
@@ -64,6 +65,7 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
         super.onPostExecute(aVoid);
         progressDialog.dismiss();
         progressDialog.setProgress(0);
+        Log.e("AppInstaller", "Updating saved version to: " + kodiVersionBeingInstalled);
         PreferenceHelper.savePreference(context, Constants.CURRENT_KODI_VERSION, kodiVersionBeingInstalled);
     }
 

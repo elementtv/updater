@@ -69,8 +69,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         nextButton = (Button) findViewById(R.id.nextButton);
         styleButton(nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
-        kodiApp = new App();
-        kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, 16));
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -94,6 +92,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void completeSetup() {
+        Log.e("Disclaimer Activity", "Complete setup");
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this, this);
         progressDialog = new ProgressDialog(this);
@@ -135,16 +134,17 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        if (isLicensed()) {
+        Log.e("Disclaimer", "On post resume");
+        if (!isLicensed()) {
             Answers.getInstance().logCustom(new CustomEvent("Licensed")
                     .putCustomAttribute("Licensed", "True")
                     .putCustomAttribute("Device Type", Build.MODEL));
             enableButtons();
+            checkForKodiUpdates();
             boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
             if (checkForUpdates) {
                 if (Connectivity.isConnectionAvailable(this)) {
                     getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
-                    checkForKodiUpdates();
                     checkForUpdates();
                 } else {
                     AlertDialog noConnection = Dialogs.buildErrorDialog(this,
@@ -166,18 +166,22 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void checkForKodiUpdates() {
+        Log.e("Disclaimer", "Checking for Kodi updates");
+        kodiApp = new App();
+        kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, 16));
         KodiUpdater kodiUpdater = new KodiUpdater();
         kodiUpdater.setListener(new KodiUpdater.KodiUpdateListener() {
             @Override
             public void onCheckComplete(App kodi) {
+                Log.e("Disclaimer", "Current version saved: " + kodiApp.getVersion());
                 if (kodiApp.getVersion() < kodi.getVersion()) {
                     updateKodi = true;
                     kodiApp = kodi;
-                    completeSetup();
                 } else {
+                    updateKodi = false;
                     kodiApp = kodi;
                 }
-
+                completeSetup();
             }
         });
         kodiUpdater.execute();
@@ -231,6 +235,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                 || Build.MODEL.equals("Element Ti5")
                 || Build.MODEL.equals("Element-Ti8")
                 || Build.MODEL.equals("Element Ti8")
+                || Build.MODEL.equalsIgnoreCase("ezstream-ti8")
                 || Build.MODEL.equals("Element Ti4 Mini"));
     }
 

@@ -13,7 +13,7 @@
     <string name="decompress_error_message">There was an error while decompressing the update file. Please, try again.</string>
     <string name="decompressing_update">Decompressing media player enhancements…</string>
     <string name="device_issue">An storage issue has arisen.</string>
-    <string name="disclaimer_activity_title">Welcome to %s</string>
+    <string name="disclaimer_activity_title">Welcome to the %s</string>
     <string name="download_error">Download Error</string>
     <string name="download_internal_error">Internal error: something went wrong while communicating with download manager.</string>
     <string name="downloading_new_version">Downloading updated enhancements for %s…</string>
@@ -71,7 +71,7 @@
     <string name="new_version_app_info">A new version of the Updater Application is available. Would you like to update now?</string>
     <string name="please_wait">Installing Updates. Please wait…</string>
     <string name="checking_for_updates">Checking for updates. Please wait…</string>
-    <string name="installing_kodi">Installing Media Center. Please wait…</string>
+    <string name="installing_kodi">Installing the Media Center. Please wait…</string>
     <string name="fresh_install">Fresh Install</string>
     <string name="save_user_settings">Save User Settings</string>
     <string name="install_details">Fresh Install – Clicking on Fresh Install WILL completely wipe any personalization you have added to Media Center. This includes Real Debrid accounts, Trakt accounts, favorites within Media Center, favorites within addons, additional addons that you have installed, and background images you have added. ONLY click on Fresh Install if you wish to completely wipe Media Center and end up with a clean installation. All personalization will need to be reinstalled by the end user.\n\nSave User Settings – Clicking on Save User Settings will update everything in Media Center the same way Fresh Install does, but will save most personalization that the end user has installed. Save User Settings will keep Real Debrid accounts, Trakt accounts, favorites within Media Center, favorites within addons, additional addons that you have installed, and background images you have added. This is the best option for users who had added personalization to their Media Center. </string>
