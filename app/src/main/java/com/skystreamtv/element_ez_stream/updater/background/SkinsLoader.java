@@ -96,7 +96,11 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
             reader.close();
             return list;
         } catch (IOException | NullPointerException e) {
-            failure_reason = context.getString(R.string.connection_error_message);
+            if (context != null) {
+                failure_reason = context.getString(R.string.connection_error_message);
+            } else {
+                failure_reason = "An error has occurred while loading information from internet. Please, check your internet connection.";
+            }
             cancel(true);
             return null;
         } catch (NumberFormatException e) {

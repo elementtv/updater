@@ -134,8 +134,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        Log.e("Disclaimer", "On post resume");
-        if (!isLicensed()) {
+        Log.d("Disclaimer", "On post resume");
+        if (isLicensed()) {
             Answers.getInstance().logCustom(new CustomEvent("Licensed")
                     .putCustomAttribute("Licensed", "True")
                     .putCustomAttribute("Device Type", Build.MODEL));

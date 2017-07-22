@@ -23,7 +23,7 @@ android {
         applicationId "com.skystreamtv.element_ez_stream.updater"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 31
+        versionCode 32
         versionName "1.0"
     }
     buildTypes {

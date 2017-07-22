@@ -68,7 +68,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "Service: indent received");
-        if (intent.getBooleanExtra("SERVICE_RESET", false)) {
+        if (intent != null && intent.getBooleanExtra("SERVICE_RESET", false)) {
             cleanInstall = intent.getBooleanExtra(Constants.CLEAN_INSTALL, false);
             Log.d(TAG, "Clean Install: " + cleanInstall);
             Log.d(TAG, "Service: reset.");
