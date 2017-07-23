@@ -4,7 +4,7 @@ package com.skystreamtv.element_ez_stream.updater.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Skin implements Parcelable{
+public class Skin implements Parcelable {
     public static final Creator<Skin> CREATOR = new Creator<Skin>() {
         @Override
         public Skin createFromParcel(Parcel in) {
@@ -27,8 +27,10 @@ public class Skin implements Parcelable{
     private boolean upToDate;
     private boolean installed;
     private String details;
+    private String notification;
 
-    public Skin(int id, String screenshot_url, String name, String description, String download_url, boolean enabled, int version, String details) {
+    public Skin(int id, String screenshot_url, String name, String description, String download_url,
+                boolean enabled, int version, String details, String notification) {
         this.id = id;
         this.screenshot_url = screenshot_url;
         this.name = name;
@@ -37,6 +39,7 @@ public class Skin implements Parcelable{
         this.enabled = enabled;
         this.version = version;
         this.details = details;
+        this.notification = notification;
     }
 
     public Skin(int id, String name, int version) {
@@ -59,6 +62,7 @@ public class Skin implements Parcelable{
         upToDate = in.readInt() != 0;
         installed = in.readInt() != 0;
         details = in.readString();
+        notification = in.readString();
     }
 
     public int getId() {
@@ -121,6 +125,14 @@ public class Skin implements Parcelable{
         return details;
     }
 
+    public String getNotification() {
+        return notification;
+    }
+
+    public void setNotification(String notification) {
+        this.notification = notification;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -138,15 +150,23 @@ public class Skin implements Parcelable{
         dest.writeInt(upToDate ? 1 : 0);
         dest.writeInt(installed ? 1 : 0);
         dest.writeString(details);
+        dest.writeString(notification);
     }
 
     @Override
     public String toString() {
         return "Skin{" +
                 "id=" + id +
+                ", screenshot_url='" + screenshot_url + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", download_url='" + download_url + '\'' +
+                ", enabled=" + enabled +
                 ", version=" + version +
+                ", upToDate=" + upToDate +
+                ", installed=" + installed +
+                ", details='" + details + '\'' +
+                ", notification='" + notification + '\'' +
                 '}';
     }
 }

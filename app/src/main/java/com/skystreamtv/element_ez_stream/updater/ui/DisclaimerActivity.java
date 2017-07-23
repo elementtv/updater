@@ -23,6 +23,7 @@ import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
 import com.skystreamtv.element_ez_stream.updater.BuildConfig;
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateService;
 import com.skystreamtv.element_ez_stream.updater.background.KodiUpdater;
 import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
@@ -37,6 +38,7 @@ import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.util.ArrayList;
 
+import static com.skystreamtv.element_ez_stream.updater.broadcast.AlarmReceiver.SAVED_TIME;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.CURRENT_KODI_VERSION;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
@@ -48,6 +50,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         SkinsLoader.SkinsLoaderListener {
 
     private static final String TAG = "DisclaimerActivity";
+    public static boolean IsRunning;
     private PlayerInstaller playerInstaller;
     private ProgressDialog progressDialog;
     private SkinsLoader skinsLoader;
@@ -56,13 +59,18 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private boolean kodiInstalled;
     private App kodiApp;
     private boolean updateKodi = false;
+    private AlertDialog noConnection;
+    private AlertDialog licenseErrorDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getIntent().getBooleanExtra(EXIT, false))
             finish();
+        IsRunning = true;
+        PreferenceHelper.savePreference(this, SAVED_TIME, System.currentTimeMillis());
         setContentView(R.layout.activity_disclaimer);
+        startService(new Intent(this, BackgroundUpdateService.class));
         Answers.getInstance().logContentView(new ContentViewEvent()
                 .putContentName("Startup Screen"));
 
@@ -72,20 +80,10 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setCancelable(true)
-                    .setTitle(R.string.external_storage_title)
-                    .setMessage(R.string.external_storage_info)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ActivityCompat.requestPermissions(DisclaimerActivity.this,
-                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    PERMISSIONS_REQUEST);
-                        }
-                    }).create();
-            dialog.show();
-            styleButton(dialog.getButton(DialogInterface.BUTTON_POSITIVE));
+            ActivityCompat.requestPermissions(DisclaimerActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSIONS_REQUEST);
+
         } else {
             completeSetup();
         }
@@ -147,7 +145,7 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
                     checkForUpdates();
                 } else {
-                    AlertDialog noConnection = Dialogs.buildErrorDialog(this,
+                    noConnection = Dialogs.buildErrorDialog(this,
                             getString(R.string.no_internet_title), getString(R.string.no_internet_info),
                             ERROR_ACTION_NO_ACTION);
                     noConnection.show();
@@ -157,11 +155,17 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         } else {
             Answers.getInstance().logCustom(new CustomEvent("Licensed")
                     .putCustomAttribute("Licensed", "False - " + Build.MODEL));
-            AlertDialog licenseErrorDialog = Dialogs.buildErrorDialog(this,
+            licenseErrorDialog = Dialogs.buildErrorDialog(this,
                     getString(R.string.license_error),
                     getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
-            licenseErrorDialog.show();
-            styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
+            try {
+                if (licenseErrorDialog != null) {
+                    licenseErrorDialog.show();
+                    styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
         }
     }
 
@@ -294,6 +298,13 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             skinsLoader = new SkinsLoader(this, this);
         }
         skinsLoader.execute();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        licenseErrorDialog = null;
+        IsRunning = false;
     }
 
     @Override

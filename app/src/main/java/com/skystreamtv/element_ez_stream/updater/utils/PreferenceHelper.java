@@ -16,6 +16,10 @@ public class PreferenceHelper {
         getSharedPreferences(context).edit().putString(name, preference).apply();
     }
 
+    public static void savePreference(Context context, String name, long preference) {
+        getSharedPreferences(context).edit().putLong(name, preference).apply();
+    }
+
     public static void savePreference(Context context, String name, boolean preference) {
         getSharedPreferences(context).edit().putBoolean(name, preference).apply();
     }
@@ -30,6 +34,10 @@ public class PreferenceHelper {
 
     public static String getPreference(Context context, String name, String defaultValue) {
         return getSharedPreferences(context).getString(name, defaultValue);
+    }
+
+    public static long getPreference(Context context, String name, long defaultValue) {
+        return getSharedPreferences(context).getLong(name, defaultValue);
     }
 
     private static SharedPreferences getSharedPreferences(Context context) {

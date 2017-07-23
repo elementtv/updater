@@ -23,9 +23,15 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     private Context context;
     private ProgressDialog progressDialog;
     private UpdateListener listener;
+    private boolean showDialog = true;
 
     public void init(Context context) {
         this.context = context;
+    }
+
+    public void init(Context context, boolean showDialog) {
+        this.context = context;
+        this.showDialog = showDialog;
     }
 
     public void setListener(UpdateListener listener) {
@@ -35,19 +41,23 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.checking_for_updates));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setCancelable(false);
-        progressDialog.setProgressNumberFormat(null);
-        progressDialog.show();
+        if (showDialog) {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage(context.getString(R.string.checking_for_updates));
+            progressDialog.setIndeterminate(true);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setCancelable(false);
+            progressDialog.setProgressNumberFormat(null);
+            progressDialog.show();
+        }
     }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        progressDialog.setProgress(values[0]);
+        if (showDialog) {
+            progressDialog.setProgress(values[0]);
+        }
     }
 
     @Override
@@ -57,8 +67,14 @@ public class Updater extends AsyncTask<Void, Integer, App> {
             app = new App();
             app.setVersion(0);
         }
-        progressDialog.dismiss();
-        progressDialog.setProgress(0);
+        if (showDialog) {
+            try {
+                progressDialog.dismiss();
+                progressDialog.setProgress(0);
+            } catch (Exception e) {
+                Crashlytics.logException(e);
+            }
+        }
         Log.d(TAG, "Updater Version: " + app.getVersion());
         if (listener != null) listener.onCheckComplete(app);
     }
@@ -80,6 +96,9 @@ public class Updater extends AsyncTask<Void, Integer, App> {
                         break;
                     case "download_url":
                         update.setDownloadUrl(reader.nextString());
+                        break;
+                    case "description":
+                        update.setDescription(reader.nextString());
                         break;
                     default:
                         reader.skipValue();

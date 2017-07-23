@@ -9,6 +9,8 @@ public class Constants {
     public static final String FIRST_TIME_CONNECTED = "firstTimeConnected";
     public static final String CURRENT_KODI_VERSION = "currentKodiVersion";
 
+    public static final long WAIT_TIME = 1000 * 60 * 60 * 3; // 3 hours
+
     // intents
     public static final String EXIT = "EXIT";
     public static final String SERVICE_RESET = "SERVICE_RESET";
@@ -22,7 +24,7 @@ public class Constants {
     public static final int PERMISSIONS_REQUEST = 1002;
 
     //element files
-    public static final String UPDATE_JSON_FILE = "/element_update.json";
+    public static final String UPDATE_JSON_FILE = "element_update.json";
     public static final String PLAYER_FILE_LOCATION = "/files/.kodi";
     static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
     static final String KODI_LOCATION = "/element_kodi_app.json";

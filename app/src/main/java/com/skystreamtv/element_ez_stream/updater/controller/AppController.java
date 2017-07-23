@@ -6,6 +6,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
+import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateChecker;
 import com.skystreamtv.element_ez_stream.updater.cache.LruBitmapCache;
 
 import io.fabric.sdk.android.Fabric;
@@ -40,6 +41,12 @@ public class AppController extends Application {
                     new LruBitmapCache());
         }
         return this.mImageLoader;
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        BackgroundUpdateChecker.start(this.getApplicationContext());
     }
 }
 

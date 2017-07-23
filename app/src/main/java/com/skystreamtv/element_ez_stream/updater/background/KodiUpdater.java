@@ -62,6 +62,9 @@ public class KodiUpdater extends AsyncTask<Void, Integer, App> {
                     case "download_url":
                         kodi.setDownloadUrl(reader.nextString().trim());
                         break;
+                    case "description":
+                        kodi.setDescription(reader.nextString());
+                        break;
                     default:
                         reader.skipValue();
                         break;

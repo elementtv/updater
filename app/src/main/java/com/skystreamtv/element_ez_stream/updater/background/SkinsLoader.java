@@ -56,6 +56,7 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                 String screenshot_url = null;
                 String brand_url = null;
                 int version = -1;
+                String notification = null;
                 String details = null;
                 Log.d(TAG, "Start reading JSON object");
                 reader.beginObject();
@@ -84,12 +85,15 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                         case "update_details":
                             details = reader.nextString();
                             break;
+                        case "notification":
+                            notification = reader.nextString();
+                            break;
                         default:
                             reader.skipValue();
                     }
                 }
                 reader.endObject();
-                list.add(new Skin(id, screenshot_url, name, description, brand_url, true, version, details));
+                list.add(new Skin(id, screenshot_url, name, description, brand_url, true, version, details, notification));
             }
             if (!reader.hasNext())
                 reader.endArray();

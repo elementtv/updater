@@ -24,7 +24,7 @@
     <string name="install_player">Install Media Player</string>
     <string name="insufficient_space">Insufficient storage space.</string>
     <string name="license_error">For EZ Stream Customers Only!</string>
-    <string name="license_message">This application is only for genuine EZ Stream devices. If you are using any other device this program will not work. To purchase a genuine EZ Stream unit please visit www.streamelement.com</string>
+    <string name="license_message">This application is only for genuine EZ Stream devices. If you are using any other device this program will not work. To purchase a genuine EZ Stream unit please visit www.ezstreambox.com</string>
     <string name="loading">Loading…</string>
     <string name="many_redirects">There were too many redirects.</string>
     <string name="missing_play_store">Missing Play Store</string>
@@ -80,4 +80,5 @@
     <string name="something_went_wrong">Something Went Wrong</string>
     <string name="try_again_later">A download URL could not be found. Please try again later.</string>
     <string name="please_wait_for_instal">Please wait while Media Center player is installing</string>
+    <string name="update_now">Update Now</string>
 </resources>

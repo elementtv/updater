@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.skystreamtv.element_ez_stream.updater">
+<manifest package="com.skystreamtv.element_ez_stream.updater"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission
         android:name="android.permission.INSTALL_PACKAGES"
-        tools:ignore="ProtectedPermissions" />
+        tools:ignore="ProtectedPermissions"/>
 
     <application
         android:name=".controller.AppController"
@@ -23,24 +24,24 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity android:name=".ui.DisclaimerActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.UpdateActivity" />
-        <activity android:name=".ui.SkinsActivity" />
+        <activity android:name=".ui.UpdateActivity"/>
+        <activity android:name=".ui.SkinsActivity"/>
 
         <service
             android:name=".background.PlayerUpdaterService"
-            android:process=":remote" />
+            android:process=":remote"/>
 
         <receiver android:name=".player.PlayerInstallerBroadcastReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_INSTALL"/>
 
-                <data android:scheme="package" />
+                <data android:scheme="package"/>
             </intent-filter>
         </receiver>
         <receiver
@@ -49,28 +50,64 @@
             <intent-filter>
                 <action
                     android:name="android.net.conn.CONNECTIVITY_CHANGE"
-                    tools:ignore="BatteryLife" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                    tools:ignore="BatteryLife"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".broadcast.AlarmReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.SCREEN_ON"/>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action
+                    android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                    tools:ignore="BatteryLife"/>
+                <action android:name="android.intent.action.DREAMING_STOPPED"/>
+                <action android:name="android.intent.action.USER_PRESENT"/>
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".broadcast.DeviceBootReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.SCREEN_ON"/>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action
+                    android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                    tools:ignore="BatteryLife"/>
+                <action android:name="android.intent.action.DREAMING_STOPPED"/>
+                <action android:name="android.intent.action.USER_PRESENT"/>
             </intent-filter>
         </receiver>
         <receiver
             android:name=".player.DownloadListenerService"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
             </intent-filter>
         </receiver>
 
         <activity
             android:name="dialogs.OpenActivity"
-            android:theme="@style/Theme.AppCompat.Dialog" />
-        <activity android:name=".ui.UpdateAvailableActivity" />
-        <activity android:name=".dialogs.OpenActivity" />
-        <activity android:name=".ui.UpdateTypeActivity" />
+            android:theme="@style/Theme.AppCompat.Dialog"/>
+        <activity
+            android:name=".dialogs.OpenForUpdate"
+            android:theme="@style/Theme.AppCompat.Dialog"/>
+        <activity android:name=".ui.UpdateAvailableActivity"/>
+        <activity android:name=".dialogs.OpenActivity"/>
+        <activity android:name=".ui.UpdateTypeActivity"/>
+
+        <service
+            android:name=".background.BackgroundUpdateService"
+            android:exported="false"
+            android:process=":ServiceProcess"/>
 
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="3a9d89fe3fbb49780ce551de1b441dff9fd3fbf7" />
+            android:value="3a9d89fe3fbb49780ce551de1b441dff9fd3fbf7"/>
     </application>
 
 </manifest>
