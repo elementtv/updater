@@ -4,6 +4,7 @@
     <string name="app_name">EZ Stream Updater</string>
     <string name="appbar_scrolling_view_behavior">android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
     <string name="applying_update">Applying enhancements…</string>
+    <string name="setup_message">Let\'s get your Skystream Media Center experience started</string>
     <string name="brand_screenshot">Skin Screenshot</string>
     <string name="can_not_write_update">Could not write media player configuration files. Please, contact our support team.</string>
     <string name="cant_resume">"Can't resume the download."</string>
@@ -80,5 +81,7 @@
     <string name="something_went_wrong">Something Went Wrong</string>
     <string name="try_again_later">A download URL could not be found. Please try again later.</string>
     <string name="please_wait_for_instal">Please wait while Media Center player is installing</string>
+    <string name="try_later_install">An error has occurred while attempting to install Media Center. Please try again later</string>
+    <string name="mandatory_install_details">The Updater has detected that a fresh install is necessary for your Media Center. A fresh install will ensure that your media center is completely up to date.</string>
     <string name="update_now">Update Now</string>
 </resources>

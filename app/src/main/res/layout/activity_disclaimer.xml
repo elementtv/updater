@@ -52,4 +52,12 @@
         android:onClick="onNextButtonClick"
         android:text="@string/next_button" />
 
+    <TextView
+        android:id="@+id/build_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:text="Version: "
+        android:textSize="12sp" />
+
 </LinearLayout>

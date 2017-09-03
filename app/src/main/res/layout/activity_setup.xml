@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.skystreamtv.element_ez_stream.updater.dialogs.OpenActivity">
+    tools:context=".dialogs.OpenActivity">
 
     <TextView
         android:id="@+id/message"
@@ -16,7 +16,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
-        android:text="@string/first_connect_message"
+        android:text="@string/setup_message"
         android:textSize="25sp" />
 
     <LinearLayout
@@ -32,8 +32,17 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onNotNowClick"
+            android:text="@string/not_now" />
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
             android:onClick="onLaterClick"
             android:text="@string/remind_me_later" />
+
         <Button
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
@@ -43,4 +52,3 @@
             android:text="@string/yes" />
     </LinearLayout>
 </RelativeLayout>
-

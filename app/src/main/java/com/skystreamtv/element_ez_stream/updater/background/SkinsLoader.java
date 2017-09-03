@@ -1,16 +1,16 @@
 package com.skystreamtv.element_ez_stream.updater.background;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.JsonReader;
-import android.util.Log;
-
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.utils.OSHelper;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.JsonReader;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -29,10 +29,6 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
         this.listener = listener;
         this.context = context;
         failure_reason = null;
-    }
-
-    public boolean hasRun() {
-        return hasRun;
     }
 
     @Override
@@ -58,6 +54,7 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                 int version = -1;
                 String notification = null;
                 String details = null;
+                int mandatoryVersion = 0;
                 Log.d(TAG, "Start reading JSON object");
                 reader.beginObject();
 
@@ -88,12 +85,16 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
                         case "notification":
                             notification = reader.nextString();
                             break;
+                        case "last_mandatory_version":
+                            mandatoryVersion = reader.nextInt();
+                            break;
                         default:
                             reader.skipValue();
                     }
                 }
                 reader.endObject();
-                list.add(new Skin(id, screenshot_url, name, description, brand_url, true, version, details, notification));
+                list.add(new Skin(id, screenshot_url, name, description, brand_url, true,
+                        version, details, notification, mandatoryVersion));
             }
             if (!reader.hasNext())
                 reader.endArray();
@@ -115,20 +116,26 @@ public class SkinsLoader extends AsyncTask<Void, Void, ArrayList<Skin>> implemen
     }
 
     @Override
-    public void onCancelled() {
-        Log.d("PlayerUpdater", "Call SkinsLoader.onCancelled()");
-        if (listener != null) listener.onCancelled(failure_reason);
-    }
-
-    @Override
     public void onPostExecute(ArrayList<Skin> result) {
         Log.d("PlayerUpdater", "Call SkinsLoader.onPostExecute()");
         if (listener != null) listener.onPostExecute(result);
     }
 
     @Override
+    public void onCancelled() {
+        Log.d("PlayerUpdater", "Call SkinsLoader.onCancelled()");
+        if (listener != null) {
+            listener.onCancelled(failure_reason);
+        }
+    }
+
+    @Override
     public void contextDestroyed() {
         this.context = null;
+    }
+
+    public boolean hasRun() {
+        return hasRun;
     }
 
     public interface SkinsLoaderListener {

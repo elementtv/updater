@@ -25,11 +25,15 @@ public class Constants {
 
     //element files
     public static final String UPDATE_JSON_FILE = "element_update.json";
-    public static final String PLAYER_FILE_LOCATION = "/files/.kodi";
+    public static final String PLAYER_FILE_LOCATION = "/files/.ftmc";
+    public static final String MANDATORY_UPDATE_KEY = "MANDATORY_UPDATE";
     static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
     static final String KODI_LOCATION = "/element_kodi_app.json";
     static final String LOCATION_JSON_FILE_V16 = "/element_ez_locations_v16.json";
     static final String KODI_LOCATION_V16 = "/element_kodi_app_v16.json";
     // preferences
     static final String SHARED_PREFS_FILE = "element";
+    // mandatory update
+    public static boolean MANDATORY_UPDATE;
+    public static boolean MANDATORY_SKIN_UPDATE;
 }

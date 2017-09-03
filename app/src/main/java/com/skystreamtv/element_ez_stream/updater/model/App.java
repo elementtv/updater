@@ -23,18 +23,21 @@ public class App implements Parcelable {
     private String download_url;
     private boolean enabled;
     private int version;
+    private int mandatoryVersion;
 
     public App() {
 
     }
 
-    public App(String icon_url, String name, String description, String download_url, boolean enabled, int version) {
+    public App(String icon_url, String name, String description, String download_url,
+            boolean enabled, int version, int mandatoryVersion) {
         this.icon_url = icon_url;
         this.name = name;
         this.description = description;
         this.download_url = download_url;
         this.enabled = enabled;
         this.version = version;
+        this.mandatoryVersion = mandatoryVersion;
     }
 
     protected App(Parcel in) {
@@ -44,6 +47,23 @@ public class App implements Parcelable {
         download_url = in.readString();
         enabled = in.readInt() != 0;
         version = in.readInt();
+        mandatoryVersion = in.readInt();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(icon_url);
+        dest.writeString(name);
+        dest.writeString(description);
+        dest.writeString(download_url);
+        dest.writeInt(enabled ? 1 : 0);
+        dest.writeInt(version);
+        dest.writeInt(mandatoryVersion);
     }
 
     public String getDownloadUrl() {
@@ -94,18 +114,11 @@ public class App implements Parcelable {
         enabled = e;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public int getMandatoryVersion() {
+        return mandatoryVersion;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(icon_url);
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeString(download_url);
-        dest.writeInt(enabled ? 1 : 0);
-        dest.writeInt(version);
+    public void setMandatoryVersion(int mandatoryVersion) {
+        this.mandatoryVersion = mandatoryVersion;
     }
 }

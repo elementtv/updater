@@ -1,5 +1,11 @@
 package com.skystreamtv.element_ez_stream.updater.player;
 
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
+
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -9,12 +15,6 @@ import android.os.Environment;
 import android.util.JsonReader;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.io.File;
 import java.io.FileReader;
@@ -37,17 +37,6 @@ public class PlayerInstaller {
                 "Android/data/" + context.getString(R.string.player_id) + PLAYER_FILE_LOCATION);
     }
 
-    public static void launchPlayer(Context context) {
-        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
-        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(launch_intent);
-        Intent finishIntent = new Intent(context.getApplicationContext(), DisclaimerActivity.class);
-        finishIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        finishIntent.putExtra(Constants.EXIT, true);
-        context.startActivity(finishIntent);
-    }
-
     public boolean isPlayerInstalled() {
         try {
             package_manager.getPackageInfo(context.getString(R.string.player_id), 0);
@@ -68,11 +57,10 @@ public class PlayerInstaller {
                     context.getString(R.string.play_store_not_installed));
         } catch (NullPointerException exception) {
             disclaimer_activity.showErrorDialog(context.getString(R.string.something_went_wrong),
-                    context.getString(R.string.try_again_later));
+                    context.getString(R.string.try_later_install));
         }
 
-        Toast.makeText(context, R.string.please_wait_for_instal,
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Please wait Media Center media player is installing", Toast.LENGTH_SHORT).show();
     }
 
     private Skin getInstalledSkin() {
@@ -126,6 +114,15 @@ public class PlayerInstaller {
         return installedSkin.getId() == selectedSkin.getId() && installedSkin.getVersion() >= selectedSkin.getVersion();
     }
 
+    public void isSkinMandatoryUpdate(Skin selectedSkin) {
+        Skin installedSkin = getInstalledSkin();
+        if (installedSkin.getId() == selectedSkin.getId()) {
+            Constants.MANDATORY_SKIN_UPDATE = installedSkin.getVersion() < selectedSkin.getMandatoryVersion();
+        } else {
+            Constants.MANDATORY_SKIN_UPDATE = true;
+        }
+    }
+
     public boolean isSkinInstalled(Skin selectedSkin) {
         Skin installedSkin = getInstalledSkin();
 
@@ -140,5 +137,16 @@ public class PlayerInstaller {
 
     public void launchPlayer() {
         launchPlayer(context);
+    }
+
+    public static void launchPlayer(Context context) {
+        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
+        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launch_intent);
+        Intent finishIntent = new Intent(context.getApplicationContext(), DisclaimerActivity.class);
+        finishIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        finishIntent.putExtra(Constants.EXIT, true);
+        context.startActivity(finishIntent);
     }
 }

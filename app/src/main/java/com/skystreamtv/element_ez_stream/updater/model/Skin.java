@@ -28,9 +28,10 @@ public class Skin implements Parcelable {
     private boolean installed;
     private String details;
     private String notification;
+    private int mandatoryVersion;
 
     public Skin(int id, String screenshot_url, String name, String description, String download_url,
-                boolean enabled, int version, String details, String notification) {
+            boolean enabled, int version, String details, String notification, int mandatoryVersion) {
         this.id = id;
         this.screenshot_url = screenshot_url;
         this.name = name;
@@ -40,6 +41,7 @@ public class Skin implements Parcelable {
         this.version = version;
         this.details = details;
         this.notification = notification;
+        this.mandatoryVersion = mandatoryVersion;
     }
 
     public Skin(int id, String name, int version) {
@@ -63,6 +65,46 @@ public class Skin implements Parcelable {
         installed = in.readInt() != 0;
         details = in.readString();
         notification = in.readString();
+        mandatoryVersion = in.readInt();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(screenshot_url);
+        dest.writeString(name);
+        dest.writeString(description);
+        dest.writeString(download_url);
+        dest.writeInt(enabled ? 1 : 0);
+        dest.writeInt(version);
+        dest.writeInt(upToDate ? 1 : 0);
+        dest.writeInt(installed ? 1 : 0);
+        dest.writeString(details);
+        dest.writeString(notification);
+        dest.writeInt(mandatoryVersion);
+    }
+
+    @Override
+    public String toString() {
+        return "Skin{" +
+                "id=" + id +
+                ", screenshot_url='" + screenshot_url + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", download_url='" + download_url + '\'' +
+                ", enabled=" + enabled +
+                ", version=" + version +
+                ", upToDate=" + upToDate +
+                ", installed=" + installed +
+                ", details='" + details + '\'' +
+                ", notification='" + notification + '\'' +
+                ", mandatory version='" + mandatoryVersion + "\'" +
+                '}';
     }
 
     public int getId() {
@@ -133,41 +175,12 @@ public class Skin implements Parcelable {
         this.notification = notification;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public int getMandatoryVersion() {
+        return mandatoryVersion;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(screenshot_url);
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeString(download_url);
-        dest.writeInt(enabled ? 1 : 0);
-        dest.writeInt(version);
-        dest.writeInt(upToDate ? 1 : 0);
-        dest.writeInt(installed ? 1 : 0);
-        dest.writeString(details);
-        dest.writeString(notification);
-    }
-
-    @Override
-    public String toString() {
-        return "Skin{" +
-                "id=" + id +
-                ", screenshot_url='" + screenshot_url + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", download_url='" + download_url + '\'' +
-                ", enabled=" + enabled +
-                ", version=" + version +
-                ", upToDate=" + upToDate +
-                ", installed=" + installed +
-                ", details='" + details + '\'' +
-                ", notification='" + notification + '\'' +
-                '}';
+    public void setMandatoryVersion(int mandatoryVersion) {
+        this.mandatoryVersion = mandatoryVersion;
     }
 }
 

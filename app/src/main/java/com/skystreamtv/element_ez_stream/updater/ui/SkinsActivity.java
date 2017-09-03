@@ -1,5 +1,16 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
+import com.android.volley.toolbox.NetworkImageView;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
+import com.skystreamtv.element_ez_stream.updater.controller.AppController;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.model.Skins;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -19,17 +30,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.android.volley.toolbox.NetworkImageView;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
-import com.skystreamtv.element_ez_stream.updater.controller.AppController;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.model.Skins;
-import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,13 +77,6 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (skins_loader != null)
-            skins_loader.contextDestroyed();
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle out_bundle) {
         Log.d(TAG, "Call SkinsActivity.onSaveInstanceState()");
         out_bundle.putSerializable(Constants.SKINS, skins);
@@ -91,8 +84,68 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (skins_loader != null)
+            skins_loader.contextDestroyed();
+    }
+
+    @Override
     public void errorAction(int action) {
 
+    }
+
+    public void showErrorDialog(final String title, final String message) {
+        Toast.makeText(getApplicationContext(), title, Toast.LENGTH_SHORT).show();
+
+        AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
+        error_dialog.show();
+        styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
+    }
+
+    @Override
+    public void onCancelled(String reason) {
+        Log.d(TAG, "Call SkinsActivity.onCancelled()");
+        progress_dialog.dismiss();
+        if (reason != null) {
+            showErrorDialog(resources.getString(R.string.github_error), reason);
+        }
+    }
+
+    @Override
+    public void onPostExecute(ArrayList<Skin> result) {
+        Log.d(TAG, "Call SkinsActivity.onPostExecute()");
+        setListAdapter(result);
+        progress_dialog.dismiss();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View listItem, int position, long id) {
+        if (!listItem.isEnabled()) {
+            return;
+        }
+        if (previously_selected_list_item != null) {
+            previously_selected_list_item.setBackgroundColor(Color.TRANSPARENT);
+        }
+        listItem.setBackgroundColor(0xFFEEEEFF);
+        previously_selected_list_item = listItem;
+        Skin selectedSkin = skins.getSkins().get(position);
+        if (player_installer.isPlayerInstalled()) {
+            if (!player_installer.isSkinUpToDate(selectedSkin)) {
+                Intent updateIntent = new Intent(this, UpdateActivity.class);
+                updateIntent.putExtra(Constants.SERVICE_RESET, true);
+                updateIntent.putExtra(Constants.SKINS, selectedSkin);
+                startActivity(updateIntent);
+            } else {
+                player_installer.launchPlayer();
+                finish();
+            }
+        } else {
+            showErrorDialog(resources.getString(R.string.player_not_installed_title),
+                    String.format(resources.getString(R.string.player_not_installed_message),
+                            resources.getString(R.string.player_name)));
+            previously_selected_list_item.setBackgroundColor(Color.TRANSPARENT);
+        }
     }
 
     protected void setListAdapter(final List<Skin> skinList) {
@@ -126,9 +179,9 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
                     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     convertView = inflater.inflate(R.layout.skins_list_item, parent, false);
                     holder = new ListViewHolder();
-                    holder.skinScreenShotImageView = (NetworkImageView) convertView.findViewById(R.id.skinScreenShotImageView);
-                    holder.skinNameTextView = (TextView) convertView.findViewById(R.id.skinNameTextView);
-                    holder.skinDescriptionTextView = (TextView) convertView.findViewById(R.id.skinDescriptionTextView);
+                    holder.skinScreenShotImageView = convertView.findViewById(R.id.skinScreenShotImageView);
+                    holder.skinNameTextView = convertView.findViewById(R.id.skinNameTextView);
+                    holder.skinDescriptionTextView = convertView.findViewById(R.id.skinDescriptionTextView);
                     convertView.setTag(holder);
                 }
                 else
@@ -173,56 +226,6 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
         progress_dialog.show();
         skins_loader = new SkinsLoader(this, this);
         skins_loader.execute();
-    }
-
-    public void showErrorDialog(final String title, final String message) {
-        Toast.makeText(getApplicationContext(),""+title,Toast.LENGTH_SHORT).show();
-
-        AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
-        error_dialog.show();
-        styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
-    }
-
-    @Override
-    public void onCancelled(String reason) {
-        Log.d(TAG, "Call SkinsActivity.onCancelled()");
-        progress_dialog.dismiss();
-        if (reason != null)
-            showErrorDialog(resources.getString(R.string.github_error), reason);
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> result) {
-        Log.d(TAG, "Call SkinsActivity.onPostExecute()");
-        setListAdapter(result);
-        progress_dialog.dismiss();
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View listItem, int position, long id) {
-        if (!listItem.isEnabled())
-            return;
-        if (previously_selected_list_item != null)
-            previously_selected_list_item.setBackgroundColor(Color.TRANSPARENT);
-        listItem.setBackgroundColor(0xFFEEEEFF);
-        previously_selected_list_item = listItem;
-        Skin selectedSkin = skins.getSkins().get(position);
-        if (player_installer.isPlayerInstalled()) {
-            if (!player_installer.isSkinUpToDate(selectedSkin)) {
-                Intent updateIntent = new Intent(this, UpdateActivity.class);
-                updateIntent.putExtra(Constants.SERVICE_RESET, true);
-                updateIntent.putExtra(Constants.SKINS, selectedSkin);
-                startActivity(updateIntent);
-            } else {
-                player_installer.launchPlayer();
-                finish();
-            }
-        } else {
-            showErrorDialog(resources.getString(R.string.player_not_installed_title),
-                    String.format(resources.getString(R.string.player_not_installed_message),
-                            resources.getString(R.string.player_name)));
-            previously_selected_list_item.setBackgroundColor(Color.TRANSPARENT);
-        }
     }
 
     static class ListViewHolder {

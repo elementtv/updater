@@ -1,23 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
@@ -36,11 +18,30 @@ import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
 import java.util.ArrayList;
 
 import static com.skystreamtv.element_ez_stream.updater.broadcast.AlarmReceiver.SAVED_TIME;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.CURRENT_KODI_VERSION;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.MANDATORY_UPDATE;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_INSTALLED;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SKINS;
@@ -59,7 +60,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private boolean kodiInstalled;
     private App kodiApp;
     private boolean updateKodi = false;
-    private AlertDialog noConnection;
     private AlertDialog licenseErrorDialog;
 
     @Override
@@ -78,6 +78,9 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         styleButton(nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
 
+        TextView textView = (TextView) findViewById(R.id.build_info);
+        textView.setText(BuildConfig.VERSION_NAME + ":" + BuildConfig.VERSION_CODE);
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(DisclaimerActivity.this,
@@ -89,8 +92,127 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         }
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Log.d("Disclaimer", "On post resume");
+        if (isLicensed()) {
+            Answers.getInstance().logCustom(new CustomEvent("Licensed")
+                    .putCustomAttribute("Licensed", "True")
+                    .putCustomAttribute("Device Type", Build.MODEL));
+            enableButtons();
+            checkForKodiUpdates();
+            boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
+            if (checkForUpdates) {
+                if (Connectivity.isConnectionAvailable(this)) {
+                    getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
+                    checkForUpdates();
+                } else {
+                    AlertDialog noConnection = Dialogs.buildErrorDialog(this,
+                            getString(R.string.no_internet_title), getString(R.string.no_internet_info),
+                            ERROR_ACTION_NO_ACTION);
+                    noConnection.show();
+                    styleButton(noConnection.getButton(DialogInterface.BUTTON_NEUTRAL));
+                }
+            }
+        } else {
+            Answers.getInstance().logCustom(new CustomEvent("Licensed")
+                    .putCustomAttribute("Licensed", "False - " + Build.MODEL));
+            licenseErrorDialog = Dialogs.buildErrorDialog(this,
+                    getString(R.string.license_error),
+                    getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
+            try {
+                if (licenseErrorDialog != null) {
+                    licenseErrorDialog.show();
+                    styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        licenseErrorDialog = null;
+        IsRunning = false;
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "Call DisclaimerActivity.onPause()");
+        super.onPause();
+        if (skinsLoader != null) {
+            skinsLoader.contextDestroyed();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                completeSetup();
+            } else {
+                AlertDialog dialog = Dialogs.buildErrorDialog(this, getString(R.string.external_storage_title),
+                        getString(R.string.external_storage_required), ERROR_ACTION_CLOSE_APP);
+                dialog.show();
+                styleButton(dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
+            }
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.close_button:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void errorAction(int action) {
+        switch (action) {
+            case ERROR_ACTION_CLOSE_APP:
+                finish();
+        }
+    }
+
+    @Override
+    public void onCancelled(String reason) {
+        progressDialog.dismiss();
+        if (reason != null) {
+            showErrorDialog(getResources().getString(R.string.github_error), reason);
+        }
+    }
+
+    @Override
+    public void onPostExecute(ArrayList<Skin> result) {
+        Log.d(TAG, "Call DisclaimerActivity.onPostExecute()");
+        progressDialog.dismiss();
+        ArrayList<Skin> skins = new ArrayList<>();
+        for (Skin each : result) {
+            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
+            each.setInstalled(playerInstaller.isSkinInstalled(each));
+            skins.add(each);
+        }
+
+        Intent intent = new Intent(DisclaimerActivity.this, UpdateAvailableActivity.class);
+        intent.putExtra(SKINS, skins);
+        intent.putExtra(PLAYER_INSTALLED, getIntent().getBooleanExtra(PLAYER_INSTALLED, false));
+        startActivity(intent);
+    }
+
     private void completeSetup() {
-        Log.e("Disclaimer Activity", "Complete setup");
         playerInstaller = new PlayerInstaller(this);
         skinsLoader = new SkinsLoader(this, this);
         progressDialog = new ProgressDialog(this);
@@ -115,60 +237,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         nextButton.requestFocus();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                completeSetup();
-            } else {
-                AlertDialog dialog = Dialogs.buildErrorDialog(this, getString(R.string.external_storage_title),
-                        getString(R.string.external_storage_required), ERROR_ACTION_CLOSE_APP);
-                dialog.show();
-                styleButton(dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
-            }
-        }
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        Log.d("Disclaimer", "On post resume");
-        if (isLicensed()) {
-            Answers.getInstance().logCustom(new CustomEvent("Licensed")
-                    .putCustomAttribute("Licensed", "True")
-                    .putCustomAttribute("Device Type", Build.MODEL));
-            enableButtons();
-            checkForKodiUpdates();
-            boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
-            if (checkForUpdates) {
-                if (Connectivity.isConnectionAvailable(this)) {
-                    getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
-                    checkForUpdates();
-                } else {
-                    noConnection = Dialogs.buildErrorDialog(this,
-                            getString(R.string.no_internet_title), getString(R.string.no_internet_info),
-                            ERROR_ACTION_NO_ACTION);
-                    noConnection.show();
-                    styleButton(noConnection.getButton(DialogInterface.BUTTON_NEUTRAL));
-                }
-            }
-        } else {
-            Answers.getInstance().logCustom(new CustomEvent("Licensed")
-                    .putCustomAttribute("Licensed", "False - " + Build.MODEL));
-            licenseErrorDialog = Dialogs.buildErrorDialog(this,
-                    getString(R.string.license_error),
-                    getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
-            try {
-                if (licenseErrorDialog != null) {
-                    licenseErrorDialog.show();
-                    styleButton(licenseErrorDialog.getButton(DialogInterface.BUTTON_NEUTRAL));
-                }
-            } catch (Exception e) {
-                // do nothing
-            }
-        }
-    }
-
     private void checkForKodiUpdates() {
         Log.e("Disclaimer", "Checking for Kodi updates");
         kodiApp = new App();
@@ -177,10 +245,14 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         kodiUpdater.setListener(new KodiUpdater.KodiUpdateListener() {
             @Override
             public void onCheckComplete(App kodi) {
-                Log.e("Disclaimer", "Current version saved: " + kodiApp.getVersion());
+                if (!MANDATORY_UPDATE) {
+                    MANDATORY_UPDATE = BuildConfig.VERSION_CODE < kodi.getMandatoryVersion();
+                    PreferenceHelper.savePreference(DisclaimerActivity.this,
+                            Constants.MANDATORY_UPDATE_KEY, MANDATORY_UPDATE);
+                }
                 if (kodiApp.getVersion() < kodi.getVersion()) {
-                    updateKodi = true;
                     kodiApp = kodi;
+                    updateKodi = true;
                 } else {
                     updateKodi = false;
                     kodiApp = kodi;
@@ -198,6 +270,11 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         updater.setListener(new Updater.UpdateListener() {
             @Override
             public void onCheckComplete(final App update) {
+
+                MANDATORY_UPDATE = BuildConfig.VERSION_CODE < update.getMandatoryVersion();
+                PreferenceHelper.savePreference(DisclaimerActivity.this,
+                        Constants.MANDATORY_UPDATE_KEY, MANDATORY_UPDATE);
+
                 if (BuildConfig.VERSION_CODE < update.getVersion()) {
                     AlertDialog.Builder dialog_builder = new AlertDialog.Builder(DisclaimerActivity.this);
                     String message = getString(R.string.new_version_app_info);
@@ -247,39 +324,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         nextButton.setEnabled(true);
     }
 
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "Call DisclaimerActivity.onPause()");
-        super.onPause();
-        if (skinsLoader != null)
-            skinsLoader.contextDestroyed();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.close_button:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void errorAction(int action) {
-        switch (action) {
-            case ERROR_ACTION_CLOSE_APP:
-                finish();
-        }
-    }
-
     public void onNextButtonClick(View nextButtonView) {
         if (!kodiInstalled || updateKodi) {
             if (playerInstaller == null) playerInstaller = new PlayerInstaller(this);
@@ -298,36 +342,5 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             skinsLoader = new SkinsLoader(this, this);
         }
         skinsLoader.execute();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        licenseErrorDialog = null;
-        IsRunning = false;
-    }
-
-    @Override
-    public void onCancelled(String reason) {
-        progressDialog.dismiss();
-        if (reason != null)
-            showErrorDialog(getResources().getString(R.string.github_error), reason);
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> result) {
-        Log.d(TAG, "Call DisclaimerActivity.onPostExecute()");
-        progressDialog.dismiss();
-        ArrayList<Skin> skins = new ArrayList<>();
-        for (Skin each : result) {
-            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
-            each.setInstalled(playerInstaller.isSkinInstalled(each));
-            skins.add(each);
-        }
-
-        Intent intent = new Intent(DisclaimerActivity.this, UpdateAvailableActivity.class);
-        intent.putExtra(SKINS, skins);
-        intent.putExtra(PLAYER_INSTALLED, getIntent().getBooleanExtra(PLAYER_INSTALLED, false));
-        startActivity(intent);
     }
 }

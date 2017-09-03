@@ -1,16 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Environment;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.skystreamtv.element_ez_stream.updater.R;
@@ -21,6 +10,17 @@ import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
 import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
+
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,25 +41,58 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_available);
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("Update/Install Kodi"));
 
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
                 "Android/data/" + getString(R.string.player_id) + PLAYER_FILE_LOCATION);
-        Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("Update/Install Kodi"));
 
         playerInstaller = new PlayerInstaller(this);
 
         Button playerButton = (Button) findViewById(R.id.skip_button);
+        styleButton(playerButton);
         playerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playerInstaller.launchPlayer();
             }
         });
-        styleButton(playerButton);
 
         skins = getIntent().getParcelableArrayListExtra(Constants.SKINS);
         recyclerView = (RecyclerView) findViewById(R.id.skin_list);
+        setupRecycleList();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("UpdateInfo", "OnActivityResult");
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Checking for Available Updates");
+        SkinsLoader skinsLoader = new SkinsLoader(this, this);
+        skinsLoader.execute();
+    }
+
+    @Override
+    public void doUpdate(Skin skin) {
+        update(skin);
+    }
+
+    @Override
+    public void onCancelled(String reason) {
+        progressDialog.dismiss();
+        if (reason != null) {
+            showErrorDialog(getResources().getString(R.string.github_error), reason);
+        }
+    }
+
+    @Override
+    public void onPostExecute(ArrayList<Skin> skins) {
+        progressDialog.dismiss();
+        for (Skin each : skins) {
+            Log.d("Update", each.getId() + " UTD: " + playerInstaller.isSkinUpToDate(each));
+            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
+            each.setInstalled(playerInstaller.isSkinInstalled(each));
+        }
         setupRecycleList();
     }
 
@@ -84,6 +117,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
             installer.execute(selectedSkin.getDownloadUrl(), String.valueOf(selectedSkin.getId()),
                     String.valueOf(selectedSkin.getVersion()));
         } else {
+
             File addons_destination = new File(PLAYER_CONF_DIRECTORY, "addons");
             File userdata_destination = new File(PLAYER_CONF_DIRECTORY, "userdata");
 
@@ -99,42 +133,14 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
 
                 startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
             }
-
+            isMandatory(selectedSkin);
             updateIntent.putExtra(Constants.SKINS, selectedSkin);
             updateIntent.putExtra(Constants.SERVICE_RESET, true);
             startActivityForResult(updateIntent, Constants.SKIN_UPDATE);
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("UpdateInfo", "OnActivityResult");
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Checking for Available Updates");
-        SkinsLoader skinsLoader = new SkinsLoader(this, this);
-        skinsLoader.execute();
-    }
-
-    @Override
-    public void doUpdate(Skin skin) {
-        update(skin);
-    }
-
-    @Override
-    public void onCancelled(String reason) {
-        progressDialog.dismiss();
-        if (reason != null)
-            showErrorDialog(getResources().getString(R.string.github_error), reason);
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> skins) {
-        progressDialog.dismiss();
-        for (Skin each : skins) {
-            Log.d("Update", each.getId() + " UTD: " + playerInstaller.isSkinUpToDate(each));
-            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
-            each.setInstalled(playerInstaller.isSkinInstalled(each));
-        }
-        setupRecycleList();
+    private void isMandatory(Skin skin) {
+        playerInstaller.isSkinMandatoryUpdate(skin);
     }
 }

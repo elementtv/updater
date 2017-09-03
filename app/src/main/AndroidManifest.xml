@@ -99,6 +99,9 @@
         <activity android:name=".ui.UpdateAvailableActivity"/>
         <activity android:name=".dialogs.OpenActivity"/>
         <activity android:name=".ui.UpdateTypeActivity"/>
+        <activity
+            android:name=".dialogs.OpenForSetup"
+            android:theme="@style/Theme.AppCompat.Dialog" />
 
         <service
             android:name=".background.BackgroundUpdateService"

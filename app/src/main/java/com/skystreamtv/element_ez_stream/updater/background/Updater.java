@@ -1,11 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.background;
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.JsonReader;
-import android.util.Log;
-
 import com.crashlytics.android.Crashlytics;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.App;
@@ -13,6 +7,12 @@ import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.JsonReader;
+import android.util.Log;
 
 import java.io.InputStreamReader;
 
@@ -25,17 +25,46 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     private UpdateListener listener;
     private boolean showDialog = true;
 
-    public void init(Context context) {
-        this.context = context;
-    }
+    @Override
+    protected App doInBackground(Void... voids) {
+        try {
+            App update = new App();
+            GHRepository repository = GitHubHelper.connectRepository();
+            GHContent content = repository.getFileContent(Constants.UPDATE_JSON_FILE);
+            JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
+            reader.beginObject();
 
-    public void init(Context context, boolean showDialog) {
-        this.context = context;
-        this.showDialog = showDialog;
-    }
+            while (reader.hasNext()) {
+                String key = reader.nextName();
+                switch (key.toLowerCase()) {
+                    case "version":
+                        update.setVersion(reader.nextInt());
+                        break;
+                    case "download_url":
+                        update.setDownloadUrl(reader.nextString());
+                        break;
+                    case "description":
+                        update.setDescription(reader.nextString());
+                        break;
+                    case "last_mandatory_version":
+                        update.setMandatoryVersion(reader.nextInt());
+                        break;
+                    default:
+                        reader.skipValue();
+                        break;
+                }
+            }
 
-    public void setListener(UpdateListener listener) {
-        this.listener = listener;
+            reader.endObject();
+            reader.close();
+            return update;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);
+        }
+
+        return null;
     }
 
     @Override
@@ -49,14 +78,6 @@ public class Updater extends AsyncTask<Void, Integer, App> {
             progressDialog.setCancelable(false);
             progressDialog.setProgressNumberFormat(null);
             progressDialog.show();
-        }
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-        if (showDialog) {
-            progressDialog.setProgress(values[0]);
         }
     }
 
@@ -80,42 +101,24 @@ public class Updater extends AsyncTask<Void, Integer, App> {
     }
 
     @Override
-    protected App doInBackground(Void... voids) {
-        try {
-            App update = new App();
-            GHRepository repository = GitHubHelper.connectRepository();
-            GHContent content = repository.getFileContent(Constants.UPDATE_JSON_FILE);
-            JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
-            reader.beginObject();
-
-            while (reader.hasNext()) {
-                String key = reader.nextName();
-                switch (key.toLowerCase()) {
-                    case "version":
-                        update.setVersion(reader.nextInt());
-                        break;
-                    case "download_url":
-                        update.setDownloadUrl(reader.nextString());
-                        break;
-                    case "description":
-                        update.setDescription(reader.nextString());
-                        break;
-                    default:
-                        reader.skipValue();
-                        break;
-                }
-            }
-
-            reader.endObject();
-            reader.close();
-            return update;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        if (showDialog) {
+            progressDialog.setProgress(values[0]);
         }
+    }
 
-        return null;
+    public void init(Context context) {
+        this.context = context;
+    }
+
+    public void init(Context context, boolean showDialog) {
+        this.context = context;
+        this.showDialog = showDialog;
+    }
+
+    public void setListener(UpdateListener listener) {
+        this.listener = listener;
     }
 
     public interface UpdateListener {

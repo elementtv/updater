@@ -1,14 +1,14 @@
 package com.skystreamtv.element_ez_stream.updater.background;
 
-import android.os.AsyncTask;
-import android.util.JsonReader;
-import android.util.Log;
-
 import com.skystreamtv.element_ez_stream.updater.model.App;
 import com.skystreamtv.element_ez_stream.updater.utils.OSHelper;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
+
+import android.os.AsyncTask;
+import android.util.JsonReader;
+import android.util.Log;
 
 import java.io.InputStreamReader;
 
@@ -16,31 +16,6 @@ public class KodiUpdater extends AsyncTask<Void, Integer, App> {
     private static final String TAG = "Updater";
 
     private KodiUpdateListener listener;
-
-    public void setListener(KodiUpdateListener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-    }
-
-    @Override
-    protected void onPostExecute(App kodi) {
-        super.onPostExecute(kodi);
-        if (kodi == null) {
-            kodi = new App();
-            kodi.setVersion(0);
-        }
-        Log.e(TAG, "Media Center Version: " + kodi.getVersion());
-        if (listener != null) listener.onCheckComplete(kodi);
-    }
 
     @Override
     protected App doInBackground(Void... voids) {
@@ -65,6 +40,9 @@ public class KodiUpdater extends AsyncTask<Void, Integer, App> {
                     case "description":
                         kodi.setDescription(reader.nextString());
                         break;
+                    case "last_mandatory_version":
+                        kodi.setMandatoryVersion(reader.nextInt());
+                        break;
                     default:
                         reader.skipValue();
                         break;
@@ -80,6 +58,33 @@ public class KodiUpdater extends AsyncTask<Void, Integer, App> {
         }
 
         return null;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+    }
+
+    @Override
+    protected void onPostExecute(App kodi) {
+        super.onPostExecute(kodi);
+        if (kodi == null) {
+            kodi = new App();
+            kodi.setVersion(0);
+        }
+        Log.e(TAG, "Media Center Version: " + kodi.getVersion());
+        if (listener != null) {
+            listener.onCheckComplete(kodi);
+        }
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+    }
+
+    public void setListener(KodiUpdateListener listener) {
+        this.listener = listener;
     }
 
     public interface KodiUpdateListener {

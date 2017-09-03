@@ -1,5 +1,13 @@
 package com.skystreamtv.element_ez_stream.updater.broadcast;
 
+import com.jaredrummler.android.processes.AndroidProcesses;
+import com.jaredrummler.android.processes.models.AndroidAppProcess;
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.dialogs.OpenActivity;
+import com.skystreamtv.element_ez_stream.updater.dialogs.OpenForSetup;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,26 +16,22 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-import com.jaredrummler.android.processes.AndroidProcesses;
-import com.jaredrummler.android.processes.models.AndroidAppProcess;
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.dialogs.OpenActivity;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-
 import java.util.List;
 
 public class NetworkChangeReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        SharedPreferences preferences = context.getSharedPreferences(Constants.UPDATER_PREFERENCES, Context.MODE_PRIVATE);
-        boolean firstConnect = preferences.getBoolean(Constants.FIRST_TIME_CONNECTED, true);
-        final ConnectivityManager connMgr = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        PlayerInstaller installer = new PlayerInstaller(context);
+        if (!installer.isPlayerInstalled() && isConnected(context)) {
+            Intent startApp = new Intent(context, OpenForSetup.class);
+            startApp.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(startApp);
+        } else {
+            SharedPreferences preferences = context.getSharedPreferences(Constants.UPDATER_PREFERENCES, Context.MODE_PRIVATE);
+            boolean firstConnect = preferences.getBoolean(Constants.FIRST_TIME_CONNECTED, true);
 
-        NetworkInfo activeNetwork = connMgr.getActiveNetworkInfo();
-        if (activeNetwork != null) { // connected to the internet
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+            if (isConnected(context)) { // connected to the internet
                 if (firstConnect && !kodiRunning(context)) {
                     Intent startApp = new Intent(context, OpenActivity.class);
                     startApp.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -47,5 +51,12 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
         }
         Log.e("Network", "False");
         return false;
+    }
+
+    private boolean isConnected(final Context context) {
+        final ConnectivityManager connMgr = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connMgr.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
     }
 }
