@@ -1,11 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.player;
 
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
-
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +9,12 @@ import android.os.Environment;
 import android.util.JsonReader;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.io.File;
 import java.io.FileReader;
@@ -35,6 +35,17 @@ public class PlayerInstaller {
         this.package_manager = context.getPackageManager();
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
                 "Android/data/" + context.getString(R.string.player_id) + PLAYER_FILE_LOCATION);
+    }
+
+    public static void launchPlayer(Context context) {
+        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
+        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launch_intent);
+        Intent finishIntent = new Intent(context.getApplicationContext(), DisclaimerActivity.class);
+        finishIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        finishIntent.putExtra(Constants.EXIT, true);
+        context.startActivity(finishIntent);
     }
 
     public boolean isPlayerInstalled() {
@@ -116,11 +127,7 @@ public class PlayerInstaller {
 
     public void isSkinMandatoryUpdate(Skin selectedSkin) {
         Skin installedSkin = getInstalledSkin();
-        if (installedSkin.getId() == selectedSkin.getId()) {
-            Constants.MANDATORY_SKIN_UPDATE = installedSkin.getVersion() < selectedSkin.getMandatoryVersion();
-        } else {
-            Constants.MANDATORY_SKIN_UPDATE = true;
-        }
+        Constants.MANDATORY_SKIN_UPDATE = installedSkin.getId() != selectedSkin.getId() || installedSkin.getVersion() < selectedSkin.getLast_mandatory_version();
     }
 
     public boolean isSkinInstalled(Skin selectedSkin) {
@@ -137,16 +144,5 @@ public class PlayerInstaller {
 
     public void launchPlayer() {
         launchPlayer(context);
-    }
-
-    public static void launchPlayer(Context context) {
-        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
-        launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(launch_intent);
-        Intent finishIntent = new Intent(context.getApplicationContext(), DisclaimerActivity.class);
-        finishIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        finishIntent.putExtra(Constants.EXIT, true);
-        context.startActivity(finishIntent);
     }
 }

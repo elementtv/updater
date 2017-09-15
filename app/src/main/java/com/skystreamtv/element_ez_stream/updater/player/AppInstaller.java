@@ -7,27 +7,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.JsonReader;
 import android.util.Log;
 
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.GitHubHelper;
-import com.skystreamtv.element_ez_stream.updater.model.App;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-import com.skystreamtv.element_ez_stream.updater.utils.OSHelper;
 import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
-
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
+@SuppressWarnings({"ResultOfMethodCallIgnored", "deprecation"})
 public class AppInstaller extends AsyncTask<Void, Integer, Void> {
 
     private static final String TAG = "AppInstaller";
@@ -35,11 +27,13 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     private Context context;
     private ProgressDialog progressDialog;
     private int kodiVersionBeingInstalled;
+    private String downloadUrl;
 
-    public void init(Context context, int kodiVersionBeingInstalled) {
+    public void init(Context context, int kodiVersionBeingInstalled, String downloadUrl) {
         Log.e("AppInstaller", "Init version: " + kodiVersionBeingInstalled);
         this.context = context;
         this.kodiVersionBeingInstalled = kodiVersionBeingInstalled;
+        this.downloadUrl = downloadUrl;
     }
 
     @Override
@@ -72,41 +66,8 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     @Override
     protected Void doInBackground(Void... app) {
         try {
-            App kodi = new App();
-            Log.d(TAG, "Get GitHub Repo");
-            GHRepository repository = GitHubHelper.connectRepository();
-            Log.d(TAG, "Getting apps.json");
-            GHContent content = repository.getFileContent(OSHelper.getKodiApp());
-            Log.d(TAG, "Prepare JSON reader for kodi_app.json");
-            JsonReader reader = new JsonReader(new InputStreamReader(content.read()));
-            Log.d(TAG, "Start reading JSON data");
-            reader.beginObject();
-
-            while (reader.hasNext()) {
-                String key = reader.nextName();
-                switch (key.toLowerCase()) {
-                    case "name":
-                        kodi.setName(reader.nextString());
-                        break;
-                    case "description":
-                        kodi.setDescription(reader.nextString());
-                        break;
-                    case "download_url":
-                        kodi.setDownloadUrl(reader.nextString());
-                        break;
-                    case "version":
-                        kodi.setVersion(reader.nextInt());
-                        break;
-                    default:
-                        reader.skipValue();
-                }
-
-            }
-            reader.endObject();
-            reader.close();
-
-            Log.d(TAG, "Get " + kodi.getDownloadUrl());
-            URL url = new URL(kodi.getDownloadUrl());
+            Log.d(TAG, "Get " + downloadUrl);
+            URL url = new URL(downloadUrl);
             HttpURLConnection c = (HttpURLConnection) url.openConnection();
             c.setRequestMethod("GET");
             c.connect();

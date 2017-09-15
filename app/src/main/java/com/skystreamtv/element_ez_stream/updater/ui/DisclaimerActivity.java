@@ -1,23 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.crashlytics.android.answers.CustomEvent;
-import com.skystreamtv.element_ez_stream.updater.BuildConfig;
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateService;
-import com.skystreamtv.element_ez_stream.updater.background.KodiUpdater;
-import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
-import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
-import com.skystreamtv.element_ez_stream.updater.background.Updater;
-import com.skystreamtv.element_ez_stream.updater.model.App;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
-import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
-import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -36,25 +18,44 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.CustomEvent;
+import com.skystreamtv.element_ez_stream.updater.BuildConfig;
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateService;
+import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
+import com.skystreamtv.element_ez_stream.updater.model.App;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
+import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
+import com.skystreamtv.element_ez_stream.updater.utils.Connectivity;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
+
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.skystreamtv.element_ez_stream.updater.broadcast.AlarmReceiver.SAVED_TIME;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.CURRENT_KODI_VERSION;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.MANDATORY_UPDATE;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_INSTALLED;
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SKINS;
 
 
-public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity,
-        SkinsLoader.SkinsLoaderListener {
+@SuppressWarnings("deprecation")
+public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterActivity {
 
     private static final String TAG = "DisclaimerActivity";
     public static boolean IsRunning;
     private PlayerInstaller playerInstaller;
     private ProgressDialog progressDialog;
-    private SkinsLoader skinsLoader;
     private Button nextButton;
     private TextView playerInstallTextView;
     private boolean kodiInstalled;
@@ -140,15 +141,6 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     @Override
-    protected void onPause() {
-        Log.d(TAG, "Call DisclaimerActivity.onPause()");
-        super.onPause();
-        if (skinsLoader != null) {
-            skinsLoader.contextDestroyed();
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -187,34 +179,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
         }
     }
 
-    @Override
-    public void onCancelled(String reason) {
-        progressDialog.dismiss();
-        if (reason != null) {
-            showErrorDialog(getResources().getString(R.string.github_error), reason);
-        }
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> result) {
-        Log.d(TAG, "Call DisclaimerActivity.onPostExecute()");
-        progressDialog.dismiss();
-        ArrayList<Skin> skins = new ArrayList<>();
-        for (Skin each : result) {
-            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
-            each.setInstalled(playerInstaller.isSkinInstalled(each));
-            skins.add(each);
-        }
-
-        Intent intent = new Intent(DisclaimerActivity.this, UpdateAvailableActivity.class);
-        intent.putExtra(SKINS, skins);
-        intent.putExtra(PLAYER_INSTALLED, getIntent().getBooleanExtra(PLAYER_INSTALLED, false));
-        startActivity(intent);
-    }
-
     private void completeSetup() {
         playerInstaller = new PlayerInstaller(this);
-        skinsLoader = new SkinsLoader(this, this);
         progressDialog = new ProgressDialog(this);
 
         setTitle(String.format(getString(R.string.disclaimer_activity_title),
@@ -238,40 +204,59 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void checkForKodiUpdates() {
-        Log.e("Disclaimer", "Checking for Kodi updates");
+        Log.e(TAG, "Checking for Kodi updates");
+        progressDialog.show();
         kodiApp = new App();
         kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, 16));
-        KodiUpdater kodiUpdater = new KodiUpdater();
-        kodiUpdater.setListener(new KodiUpdater.KodiUpdateListener() {
+        ApiProvider.getInstance().getPlayerData(new Callback<App>() {
             @Override
-            public void onCheckComplete(App kodi) {
-                if (!MANDATORY_UPDATE) {
-                    MANDATORY_UPDATE = BuildConfig.VERSION_CODE < kodi.getMandatoryVersion();
+            public void onResponse(Call<App> call, Response<App> response) {
+                progressDialog.hide();
+                App player = response.body();
+                if (player == null) {
+                    player = new App();
+                    player.setVersion(0);
+                    player.setLast_mandatory_version(0);
+                }
+                if (!Constants.MANDATORY_UPDATE) {
+                    Constants.MANDATORY_UPDATE = BuildConfig.VERSION_CODE < player.getLast_mandatory_version();
                     PreferenceHelper.savePreference(DisclaimerActivity.this,
                             Constants.MANDATORY_UPDATE_KEY, MANDATORY_UPDATE);
                 }
-                if (kodiApp.getVersion() < kodi.getVersion()) {
-                    kodiApp = kodi;
+                if (kodiApp.getVersion() < player.getVersion()) {
+                    kodiApp = player;
                     updateKodi = true;
                 } else {
                     updateKodi = false;
-                    kodiApp = kodi;
+                    kodiApp = player;
                 }
                 completeSetup();
             }
+
+            @Override
+            public void onFailure(Call<App> call, Throwable t) {
+                onNetworkError("An error has occurred trying to update Media Player. Please try again later.", t);
+            }
         });
-        kodiUpdater.execute();
     }
 
     private void checkForUpdates() {
-        Updater updater = new Updater();
-        updater.init(this);
-        updater.execute();
-        updater.setListener(new Updater.UpdateListener() {
+        Log.e(TAG, "Player Updates");
+        progressDialog.show();
+        ApiProvider.getInstance().getUpdaterData(new Callback<App>() {
             @Override
-            public void onCheckComplete(final App update) {
+            public void onResponse(Call<App> call, Response<App> response) {
+                progressDialog.hide();
+                App app = response.body();
+                if (app == null) {
+                    app = new App();
+                    app.setVersion(0);
+                    app.setLast_mandatory_version(0);
+                }
 
-                MANDATORY_UPDATE = BuildConfig.VERSION_CODE < update.getMandatoryVersion();
+                final App update = app;
+
+                Constants.MANDATORY_UPDATE = BuildConfig.VERSION_CODE < update.getLast_mandatory_version();
                 PreferenceHelper.savePreference(DisclaimerActivity.this,
                         Constants.MANDATORY_UPDATE_KEY, MANDATORY_UPDATE);
 
@@ -306,6 +291,11 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     }).show();
                 }
             }
+
+            @Override
+            public void onFailure(Call<App> call, Throwable t) {
+                onNetworkError("An error has occurred trying to update this application. Please try again later.", t);
+            }
         });
     }
 
@@ -329,18 +319,46 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             if (playerInstaller == null) playerInstaller = new PlayerInstaller(this);
             playerInstaller.installPlayer(kodiApp.getDownloadUrl());
             AppInstaller appInstaller = new AppInstaller();
-            appInstaller.init(this, kodiApp.getVersion());
+            appInstaller.init(this, kodiApp.getVersion(), kodiApp.getDownloadUrl());
             appInstaller.execute();
         } else {
             updateOrLaunchPlayer();
         }
     }
 
-    private void updateOrLaunchPlayer() {
+    protected void updateOrLaunchPlayer() {
         progressDialog.show();
-        if (skinsLoader.hasRun()) {
-            skinsLoader = new SkinsLoader(this, this);
+        ApiProvider.getInstance().getSkinsData(new Callback<List<Skin>>() {
+            @Override
+            public void onResponse(Call<List<Skin>> call, Response<List<Skin>> response) {
+                List<Skin> result = response.body();
+                if (result == null) result = new ArrayList<>();
+                progressDialog.dismiss();
+                ArrayList<Skin> skins = new ArrayList<>();
+                for (Skin each : result) {
+                    each.setUpToDate(playerInstaller.isSkinUpToDate(each));
+                    each.setInstalled(playerInstaller.isSkinInstalled(each));
+                    skins.add(each);
+                }
+
+                Intent intent = new Intent(DisclaimerActivity.this, UpdateAvailableActivity.class);
+                intent.putExtra(Constants.SKINS, skins);
+                intent.putExtra(Constants.PLAYER_INSTALLED, getIntent().getBooleanExtra(Constants.PLAYER_INSTALLED, false));
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFailure(Call<List<Skin>> call, Throwable t) {
+                onNetworkError("An error has occurred while cheding for add-on updates. Please try again later.", t);
+            }
+        });
+    }
+
+    private void onNetworkError(String message, Throwable t) {
+        if (progressDialog != null) {
+            progressDialog.hide();
         }
-        skinsLoader.execute();
+        Crashlytics.logException(t);
+        showErrorDialog("Error", message);
     }
 }

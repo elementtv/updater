@@ -23,7 +23,7 @@ public class App implements Parcelable {
     private String download_url;
     private boolean enabled;
     private int version;
-    private int mandatoryVersion;
+    private int last_mandatory_version;
 
     public App() {
 
@@ -37,7 +37,7 @@ public class App implements Parcelable {
         this.download_url = download_url;
         this.enabled = enabled;
         this.version = version;
-        this.mandatoryVersion = mandatoryVersion;
+        this.last_mandatory_version = mandatoryVersion;
     }
 
     protected App(Parcel in) {
@@ -47,7 +47,7 @@ public class App implements Parcelable {
         download_url = in.readString();
         enabled = in.readInt() != 0;
         version = in.readInt();
-        mandatoryVersion = in.readInt();
+        last_mandatory_version = in.readInt();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class App implements Parcelable {
         dest.writeString(download_url);
         dest.writeInt(enabled ? 1 : 0);
         dest.writeInt(version);
-        dest.writeInt(mandatoryVersion);
+        dest.writeInt(last_mandatory_version);
     }
 
     public String getDownloadUrl() {
@@ -114,11 +114,24 @@ public class App implements Parcelable {
         enabled = e;
     }
 
-    public int getMandatoryVersion() {
-        return mandatoryVersion;
+    public int getLast_mandatory_version() {
+        return last_mandatory_version;
     }
 
-    public void setMandatoryVersion(int mandatoryVersion) {
-        this.mandatoryVersion = mandatoryVersion;
+    public void setLast_mandatory_version(int last_mandatory_version) {
+        this.last_mandatory_version = last_mandatory_version;
+    }
+
+    @Override
+    public String toString() {
+        return "App{" +
+                "icon_url='" + icon_url + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", download_url='" + download_url + '\'' +
+                ", enabled=" + enabled +
+                ", version=" + version +
+                ", last_mandatory_version=" + last_mandatory_version +
+                '}';
     }
 }

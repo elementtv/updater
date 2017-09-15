@@ -1,16 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
-import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
-import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,14 +11,29 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.DividerItemDecoration;
+import com.skystreamtv.element_ez_stream.updater.utils.adapters.UpdateItemAdapter;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
 
-public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate,
-        SkinsLoader.SkinsLoaderListener {
+@SuppressWarnings("deprecation")
+public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate {
 
     private ProgressDialog progressDialog;
     private List<Skin> skins;
@@ -68,32 +72,30 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
         Log.d("UpdateInfo", "OnActivityResult");
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Checking for Available Updates");
-        SkinsLoader skinsLoader = new SkinsLoader(this, this);
-        skinsLoader.execute();
+        ApiProvider.getInstance().getSkinsData(new Callback<List<Skin>>() {
+            @Override
+            public void onResponse(Call<List<Skin>> call, Response<List<Skin>> response) {
+                progressDialog.dismiss();
+                skins = response.body();
+                if (skins == null) skins = new ArrayList<>();
+                for (Skin each : skins) {
+                    Log.d("Update", each.getId() + " UTD: " + playerInstaller.isSkinUpToDate(each));
+                    each.setUpToDate(playerInstaller.isSkinUpToDate(each));
+                    each.setInstalled(playerInstaller.isSkinInstalled(each));
+                }
+                setupRecycleList();
+            }
+
+            @Override
+            public void onFailure(Call<List<Skin>> call, Throwable t) {
+                showErrorDialog(getResources().getString(R.string.github_error), "An Error has Occurred");
+            }
+        });
     }
 
     @Override
     public void doUpdate(Skin skin) {
         update(skin);
-    }
-
-    @Override
-    public void onCancelled(String reason) {
-        progressDialog.dismiss();
-        if (reason != null) {
-            showErrorDialog(getResources().getString(R.string.github_error), reason);
-        }
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> skins) {
-        progressDialog.dismiss();
-        for (Skin each : skins) {
-            Log.d("Update", each.getId() + " UTD: " + playerInstaller.isSkinUpToDate(each));
-            each.setUpToDate(playerInstaller.isSkinUpToDate(each));
-            each.setInstalled(playerInstaller.isSkinInstalled(each));
-        }
-        setupRecycleList();
     }
 
     private void setupRecycleList() {

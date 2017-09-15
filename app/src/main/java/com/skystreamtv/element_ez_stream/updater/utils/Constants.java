@@ -9,7 +9,7 @@ public class Constants {
     public static final String FIRST_TIME_CONNECTED = "firstTimeConnected";
     public static final String CURRENT_KODI_VERSION = "currentKodiVersion";
 
-    public static final long WAIT_TIME = 1000 * 60 * 60 * 3; // 3 hours
+    public static final long WAIT_TIME = 1000 * 60 * 60; // 1 hour
 
     // intents
     public static final String EXIT = "EXIT";
@@ -24,13 +24,8 @@ public class Constants {
     public static final int PERMISSIONS_REQUEST = 1002;
 
     //element files
-    public static final String UPDATE_JSON_FILE = "element_update.json";
     public static final String PLAYER_FILE_LOCATION = "/files/.ftmc";
     public static final String MANDATORY_UPDATE_KEY = "MANDATORY_UPDATE";
-    static final String LOCATION_JSON_FILE = "/element_ez_locations.json";
-    static final String KODI_LOCATION = "/element_kodi_app.json";
-    static final String LOCATION_JSON_FILE_V16 = "/element_ez_locations_v16.json";
-    static final String KODI_LOCATION_V16 = "/element_kodi_app_v16.json";
     // preferences
     static final String SHARED_PREFS_FILE = "element";
     // mandatory update

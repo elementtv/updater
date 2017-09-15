@@ -21,14 +21,14 @@ public class Skin implements Parcelable {
     private String screenshot_url;
     private String name;
     private String description;
-    private String download_url;
+    private String brand_url;
     private boolean enabled;
     private int version;
     private boolean upToDate;
     private boolean installed;
-    private String details;
+    private String update_details;
     private String notification;
-    private int mandatoryVersion;
+    private int last_mandatory_version;
 
     public Skin(int id, String screenshot_url, String name, String description, String download_url,
             boolean enabled, int version, String details, String notification, int mandatoryVersion) {
@@ -36,12 +36,12 @@ public class Skin implements Parcelable {
         this.screenshot_url = screenshot_url;
         this.name = name;
         this.description = description;
-        this.download_url = download_url;
+        this.brand_url = download_url;
         this.enabled = enabled;
         this.version = version;
-        this.details = details;
+        this.update_details = details;
         this.notification = notification;
-        this.mandatoryVersion = mandatoryVersion;
+        this.last_mandatory_version = mandatoryVersion;
     }
 
     public Skin(int id, String name, int version) {
@@ -58,14 +58,14 @@ public class Skin implements Parcelable {
         screenshot_url = in.readString();
         name = in.readString();
         description = in.readString();
-        download_url = in.readString();
+        brand_url = in.readString();
         enabled = in.readInt() != 0;
         version = in.readInt();
         upToDate = in.readInt() != 0;
         installed = in.readInt() != 0;
-        details = in.readString();
+        update_details = in.readString();
         notification = in.readString();
-        mandatoryVersion = in.readInt();
+        last_mandatory_version = in.readInt();
     }
 
     @Override
@@ -79,14 +79,14 @@ public class Skin implements Parcelable {
         dest.writeString(screenshot_url);
         dest.writeString(name);
         dest.writeString(description);
-        dest.writeString(download_url);
+        dest.writeString(brand_url);
         dest.writeInt(enabled ? 1 : 0);
         dest.writeInt(version);
         dest.writeInt(upToDate ? 1 : 0);
         dest.writeInt(installed ? 1 : 0);
-        dest.writeString(details);
+        dest.writeString(update_details);
         dest.writeString(notification);
-        dest.writeInt(mandatoryVersion);
+        dest.writeInt(last_mandatory_version);
     }
 
     @Override
@@ -96,14 +96,14 @@ public class Skin implements Parcelable {
                 ", screenshot_url='" + screenshot_url + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", download_url='" + download_url + '\'' +
+                ", brand_url='" + brand_url + '\'' +
                 ", enabled=" + enabled +
                 ", version=" + version +
                 ", upToDate=" + upToDate +
                 ", installed=" + installed +
-                ", details='" + details + '\'' +
+                ", update_details='" + update_details + '\'' +
                 ", notification='" + notification + '\'' +
-                ", mandatory version='" + mandatoryVersion + "\'" +
+                ", mandatory version='" + last_mandatory_version + "\'" +
                 '}';
     }
 
@@ -116,7 +116,7 @@ public class Skin implements Parcelable {
     }
 
     public String getDownloadUrl() {
-        return download_url;
+        return brand_url;
     }
 
     public int getVersion() {
@@ -163,8 +163,8 @@ public class Skin implements Parcelable {
         this.installed = installed;
     }
 
-    public String getDetails() {
-        return details;
+    public String getUpdate_details() {
+        return update_details;
     }
 
     public String getNotification() {
@@ -175,12 +175,12 @@ public class Skin implements Parcelable {
         this.notification = notification;
     }
 
-    public int getMandatoryVersion() {
-        return mandatoryVersion;
+    public int getLast_mandatory_version() {
+        return last_mandatory_version;
     }
 
-    public void setMandatoryVersion(int mandatoryVersion) {
-        this.mandatoryVersion = mandatoryVersion;
+    public void setLast_mandatory_version(int last_mandatory_version) {
+        this.last_mandatory_version = last_mandatory_version;
     }
 }
 

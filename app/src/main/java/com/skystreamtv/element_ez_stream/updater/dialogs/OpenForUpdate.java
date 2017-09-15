@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateChecker;
 import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
 import com.skystreamtv.element_ez_stream.updater.utils.TextUtil;
 
@@ -65,6 +64,6 @@ public class OpenForUpdate extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        startService(new Intent(OpenForUpdate.this, BackgroundUpdateChecker.class));
+        //startService(new Intent(OpenForUpdate.this, BackgroundUpdateChecker.class));
     }
 }

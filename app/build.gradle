@@ -23,7 +23,7 @@ android {
         applicationId "com.skystreamtv.element_ez_stream.updater"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 34
+        versionCode 38
         versionName "1.0"
     }
     buildTypes {
@@ -56,11 +56,14 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
-    compile 'org.kohsuke:github-api:1.76'
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.android.support:design:26.0.0-alpha1'
     compile 'com.jaredrummler:android-processes:1.0.8'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
 }

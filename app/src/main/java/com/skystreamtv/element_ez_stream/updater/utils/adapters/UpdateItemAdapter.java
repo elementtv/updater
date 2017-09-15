@@ -43,7 +43,7 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
     public void onBindViewHolder(final ItemViewHolder holder, int position) {
         final Skin skin = skins.get(position);
         holder.name.setText(skin.getName());
-        holder.details.setText(TextUtil.fromHtml(skin.getDetails()));
+        holder.details.setText(TextUtil.fromHtml(skin.getUpdate_details()));
         Log.d("Adapter", "skin: " + skin.getName() + " UTD: " + skin.isUpToDate());
         if (skin.isInstalled()) {
             if (!skin.isUpToDate()) {
@@ -102,10 +102,10 @@ public class UpdateItemAdapter extends RecyclerView.Adapter<UpdateItemAdapter.It
 
         ItemViewHolder(View itemView) {
             super(itemView);
-            name = (TextView) itemView.findViewById(R.id.update_name);
-            status = (TextView) itemView.findViewById(R.id.update_status);
-            details = (TextView) itemView.findViewById(R.id.details);
-            update = (Button) itemView.findViewById(R.id.update_button);
+            name = itemView.findViewById(R.id.update_name);
+            status = itemView.findViewById(R.id.update_status);
+            details = itemView.findViewById(R.id.details);
+            update = itemView.findViewById(R.id.update_button);
         }
     }
 }

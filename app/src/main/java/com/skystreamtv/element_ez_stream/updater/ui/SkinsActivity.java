@@ -1,16 +1,5 @@
 package com.skystreamtv.element_ez_stream.updater.ui;
 
-import com.android.volley.toolbox.NetworkImageView;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.skystreamtv.element_ez_stream.updater.R;
-import com.skystreamtv.element_ez_stream.updater.background.SkinsLoader;
-import com.skystreamtv.element_ez_stream.updater.controller.AppController;
-import com.skystreamtv.element_ez_stream.updater.model.Skin;
-import com.skystreamtv.element_ez_stream.updater.model.Skins;
-import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
-import com.skystreamtv.element_ez_stream.updater.utils.Constants;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -31,18 +20,33 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.android.volley.toolbox.NetworkImageView;
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.controller.AppController;
+import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.model.Skins;
+import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
+import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
+import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+
+@SuppressWarnings("deprecation")
 public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity,
-        AdapterView.OnItemClickListener, SkinsLoader.SkinsLoaderListener {
+        AdapterView.OnItemClickListener {
 
     private static final String TAG = "SkinsActivity";
 
     protected Skins skins;
     protected BaseAdapter list_adapter;
-    protected SkinsLoader skins_loader = null;
     protected ProgressDialog progress_dialog;
     protected PlayerInstaller player_installer;
     protected View previously_selected_list_item;
@@ -86,8 +90,6 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
     @Override
     protected void onPause() {
         super.onPause();
-        if (skins_loader != null)
-            skins_loader.contextDestroyed();
     }
 
     @Override
@@ -101,22 +103,6 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
         AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, 0);
         error_dialog.show();
         styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
-    }
-
-    @Override
-    public void onCancelled(String reason) {
-        Log.d(TAG, "Call SkinsActivity.onCancelled()");
-        progress_dialog.dismiss();
-        if (reason != null) {
-            showErrorDialog(resources.getString(R.string.github_error), reason);
-        }
-    }
-
-    @Override
-    public void onPostExecute(ArrayList<Skin> result) {
-        Log.d(TAG, "Call SkinsActivity.onPostExecute()");
-        setListAdapter(result);
-        progress_dialog.dismiss();
     }
 
     @Override
@@ -224,11 +210,26 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
     protected void loadListData() {
         Log.d(TAG, "Call SkinsActivity.loadListData()");
         progress_dialog.show();
-        skins_loader = new SkinsLoader(this, this);
-        skins_loader.execute();
+        ApiProvider.getInstance().getSkinsData(new Callback<List<Skin>>() {
+            @Override
+            public void onResponse(Call<List<Skin>> call, Response<List<Skin>> response) {
+                setListAdapter(response.body());
+                progress_dialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<List<Skin>> call, Throwable t) {
+                progress_dialog.dismiss();
+                showErrorDialog("Error", "An error has occurred");
+                if (t != null) {
+                    Log.e(TAG, t.getMessage());
+                    Crashlytics.logException(t);
+                }
+            }
+        });
     }
 
-    static class ListViewHolder {
+    private static class ListViewHolder {
         NetworkImageView skinScreenShotImageView;
         TextView skinNameTextView;
         TextView skinDescriptionTextView;
