@@ -47,7 +47,7 @@ public class ApiProvider {
         OkHttpClient client = httpBuilder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://s3.amazonaws.com/updaterbeta/")
+                .baseUrl(getEndpoint())
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
@@ -58,16 +58,16 @@ public class ApiProvider {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
+    public static boolean isOSVersion7() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
     public static ApiProvider getInstance() {
         if (instance == null) {
             instance = new ApiProvider();
         }
 
         return instance;
-    }
-
-    public ApiService getApiService() {
-        return service;
     }
 
     public void getUpdaterData(Callback<App> callback) {
@@ -88,5 +88,14 @@ public class ApiProvider {
         } else {
             service.getSkinsV16().enqueue(callback);
         }
+    }
+
+    private static String getEndpoint() {
+        String baseURL = "http://s3.amazonaws.com/";
+//        if (isOSVersion7()) {
+        return baseURL + "kodiupdater/";
+//        } else {
+//            return baseURL + "updaterbeta/";
+//        }
     }
 }

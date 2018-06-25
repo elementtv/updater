@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
 import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.io.File;
@@ -21,7 +24,6 @@ import java.net.URL;
 public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
 
     private static final String TAG = "UpdateInstaller";
-
     private Context context;
     private ProgressDialog progressDialog;
     private String id;
@@ -55,8 +57,12 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        progressDialog.dismiss();
-        progressDialog.setProgress(0);
+        try {
+            progressDialog.dismiss();
+            progressDialog.setProgress(0);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
         if (fireListener) listener.updateComplete();
     }
 
@@ -94,17 +100,28 @@ public class UpdateInstaller extends AsyncTask<String, Integer, Void> {
             long total = 0;
             while ((len1 = is.read(buffer)) != -1) {
                 total += len1;
-                long percent = (total * 100) / lengthOfFile;
-                publishProgress((int) percent);
+                long percent = (total*100)/lengthOfFile;
+                publishProgress((int)percent);
                 fos.write(buffer, 0, len1);
             }
             fos.close();
             is.close();
             Log.d(TAG, "Closing file");
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(outputFile), "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
-            context.startActivity(intent);
+            Log.d(TAG, "New file success: " + outputFile.exists());
+            if (ApiProvider.isOSVersion7()) {
+                Uri fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", outputFile);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                context.startActivity(intent);
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(outputFile), "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
+                Log.d(TAG, "Starting install");
+                context.startActivity(intent);
+            }
             if (id != null && !id.equals("")) {
                 PreferenceHelper.savePreference(context, id, Integer.valueOf(version));
                 fireListener = true;

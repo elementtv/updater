@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateService;
 import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
 import com.skystreamtv.element_ez_stream.updater.utils.TextUtil;
 
@@ -40,7 +41,7 @@ public class OpenForUpdate extends AppCompatActivity {
     public void onLaterClick(View v) {
         new AlertDialog.Builder(this)
                 .setTitle("Are you sure?")
-                .setMessage("You must run this update before customer service will be able to help you with any issues relating to the media center app.").setNegativeButton("Later", new DialogInterface.OnClickListener() {
+                .setMessage(R.string.must_run_rational).setNegativeButton("Later", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 finish();
@@ -64,6 +65,6 @@ public class OpenForUpdate extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //startService(new Intent(OpenForUpdate.this, BackgroundUpdateChecker.class));
+        startService(new Intent(OpenForUpdate.this, BackgroundUpdateService.class));
     }
 }

@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,6 +29,7 @@ import com.skystreamtv.element_ez_stream.updater.background.BackgroundUpdateServ
 import com.skystreamtv.element_ez_stream.updater.background.UpdateInstaller;
 import com.skystreamtv.element_ez_stream.updater.model.App;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
+import com.skystreamtv.element_ez_stream.updater.model.Version;
 import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
 import com.skystreamtv.element_ez_stream.updater.player.AppInstaller;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
@@ -46,7 +48,7 @@ import static com.skystreamtv.element_ez_stream.updater.broadcast.AlarmReceiver.
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.CURRENT_KODI_VERSION;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.EXIT;
 import static com.skystreamtv.element_ez_stream.updater.utils.Constants.MANDATORY_UPDATE;
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PERMISSIONS_REQUEST;
+import static com.skystreamtv.element_ez_stream.updater.utils.Constants.SPMC_ID;
 
 
 @SuppressWarnings("deprecation")
@@ -55,13 +57,13 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     private static final String TAG = "DisclaimerActivity";
     public static boolean IsRunning;
     private PlayerInstaller playerInstaller;
-    private ProgressDialog progressDialog;
     private Button nextButton;
     private TextView playerInstallTextView;
     private boolean kodiInstalled;
     private App kodiApp;
     private boolean updateKodi = false;
-    private AlertDialog licenseErrorDialog;
+    private final int UNINSTALL = 5678;
+    private AlertDialog uninstallDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,24 +72,24 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
             finish();
         IsRunning = true;
         PreferenceHelper.savePreference(this, SAVED_TIME, System.currentTimeMillis());
+        PreferenceHelper.savePreference(this, Constants.FIRST_TIME_CONNECTED, false);
         setContentView(R.layout.activity_disclaimer);
-        startService(new Intent(this, BackgroundUpdateService.class));
         Answers.getInstance().logContentView(new ContentViewEvent()
                 .putContentName("Startup Screen"));
-
+        startService(new Intent(this, BackgroundUpdateService.class));
         nextButton = (Button) findViewById(R.id.nextButton);
         styleButton(nextButton);
         playerInstallTextView = (TextView) findViewById(R.id.playerInstallTextView);
 
         TextView textView = (TextView) findViewById(R.id.build_info);
-        textView.setText(BuildConfig.VERSION_NAME + ":" + BuildConfig.VERSION_CODE);
+        String textValue = BuildConfig.VERSION_NAME + ":" + BuildConfig.VERSION_CODE;
+        textView.setText(textValue);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(DisclaimerActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PERMISSIONS_REQUEST);
-
+                    Constants.PERMISSIONS_REQUEST);
         } else {
             completeSetup();
         }
@@ -96,30 +98,52 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        Log.d("Disclaimer", "On post resume");
         if (isLicensed()) {
-            Answers.getInstance().logCustom(new CustomEvent("Licensed")
-                    .putCustomAttribute("Licensed", "True")
-                    .putCustomAttribute("Device Type", Build.MODEL));
-            enableButtons();
-            checkForKodiUpdates();
-            boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
-            if (checkForUpdates) {
-                if (Connectivity.isConnectionAvailable(this)) {
-                    getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
-                    checkForUpdates();
-                } else {
-                    AlertDialog noConnection = Dialogs.buildErrorDialog(this,
-                            getString(R.string.no_internet_title), getString(R.string.no_internet_info),
-                            ERROR_ACTION_NO_ACTION);
-                    noConnection.show();
-                    styleButton(noConnection.getButton(DialogInterface.BUTTON_NEUTRAL));
+            Log.e(TAG, "On Post Resumed");
+            playerInstaller = new PlayerInstaller(this);
+            if (playerInstaller.isSPMCInstalled()) {
+                uninstallDialog = new AlertDialog.Builder(DisclaimerActivity.this)
+                        .setTitle("Upgrade The Media Center")
+                        .setMessage(R.string.uninstall_text)
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                                Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                Uri uri = Uri.fromParts("package", SPMC_ID, null);
+                                intent.setData(uri);
+                                startActivityForResult(intent, UNINSTALL);
+                            }
+                        }).setCancelable(false)
+                        .show();
+            } else {
+                if (uninstallDialog != null) {
+                    uninstallDialog.dismiss();
+                }
+                Answers.getInstance().logCustom(new CustomEvent("Licensed")
+                        .putCustomAttribute("Licensed", "True")
+                        .putCustomAttribute("Device Type", Build.MODEL));
+                enableButtons();
+                checkForKodiUpdates();
+                boolean checkForUpdates = getIntent().getBooleanExtra(Constants.CHECK_FOR_UPDATES, true);
+                if (checkForUpdates) {
+                    if (Connectivity.isConnectionAvailable(this)) {
+                        getIntent().putExtra(Constants.CHECK_FOR_UPDATES, false);
+                        checkForUpdates();
+                    } else {
+                        AlertDialog noConnection = Dialogs.buildErrorDialog(this,
+                                getString(R.string.no_internet_title), getString(R.string.no_internet_info), ERROR_ACTION_NO_ACTION);
+                        noConnection.show();
+                        styleButton(noConnection.getButton(DialogInterface.BUTTON_NEUTRAL));
+                    }
                 }
             }
+
         } else {
             Answers.getInstance().logCustom(new CustomEvent("Licensed")
                     .putCustomAttribute("Licensed", "False - " + Build.MODEL));
-            licenseErrorDialog = Dialogs.buildErrorDialog(this,
+            AlertDialog licenseErrorDialog = Dialogs.buildErrorDialog(this,
                     getString(R.string.license_error),
                     getString(R.string.license_message), ERROR_ACTION_CLOSE_APP);
             try {
@@ -136,13 +160,30 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        licenseErrorDialog = null;
         IsRunning = false;
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (uninstallDialog != null) {
+            uninstallDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e(TAG, "request: " + requestCode + " result: " + resultCode);
+        if (requestCode == UNINSTALL) {
+            completeSetup();
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST) {
+        if (requestCode == Constants.PERMISSIONS_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 completeSetup();
             } else {
@@ -180,12 +221,21 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void completeSetup() {
+        if (PreferenceHelper.getPreference(this, Constants.CURRENT_KODI_VERSION,
+                Constants.getDefaultPlayerValues()) <= Constants.getDefaultPlayerValues()) {
+            Version version = new Version();
+            version.loadFromFile();
+            int currentVersion = Constants.getDefaultPlayerValues() > version.getKodiVersion()
+                    ? Constants.getDefaultPlayerValues() : version.getKodiVersion();
+            PreferenceHelper.savePreference(this, Constants.CURRENT_KODI_VERSION, currentVersion);
+        }
+
         playerInstaller = new PlayerInstaller(this);
-        progressDialog = new ProgressDialog(this);
 
         setTitle(String.format(getString(R.string.disclaimer_activity_title),
                 getString(R.string.app_name)));
 
+        progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.loading));
 
         kodiInstalled = playerInstaller.isPlayerInstalled();
@@ -204,14 +254,14 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     private void checkForKodiUpdates() {
-        Log.e(TAG, "Checking for Kodi updates");
-        progressDialog.show();
+        showProgressDialog();
+        Log.e(TAG, "Kodi Updates");
         kodiApp = new App();
-        kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, 16));
+        kodiApp.setVersion(PreferenceHelper.getPreference(this, CURRENT_KODI_VERSION, Constants.getDefaultPlayerValues()));
         ApiProvider.getInstance().getPlayerData(new Callback<App>() {
             @Override
             public void onResponse(Call<App> call, Response<App> response) {
-                progressDialog.hide();
+                hideProgressDialog();
                 App player = response.body();
                 if (player == null) {
                     player = new App();
@@ -230,23 +280,25 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                     updateKodi = false;
                     kodiApp = player;
                 }
+                kodiApp = player;
                 completeSetup();
             }
 
             @Override
             public void onFailure(Call<App> call, Throwable t) {
-                onNetworkError("An error has occurred trying to update Media Player. Please try again later.", t);
+                onNetworkError(getString(R.string.network_error), t);
             }
         });
     }
 
     private void checkForUpdates() {
         Log.e(TAG, "Player Updates");
-        progressDialog.show();
+        showProgressDialog();
         ApiProvider.getInstance().getUpdaterData(new Callback<App>() {
             @Override
             public void onResponse(Call<App> call, Response<App> response) {
-                progressDialog.hide();
+                Log.d(TAG, "Got response: " + response.toString());
+                hideProgressDialog();
                 App app = response.body();
                 if (app == null) {
                     app = new App();
@@ -294,7 +346,8 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
             @Override
             public void onFailure(Call<App> call, Throwable t) {
-                onNetworkError("An error has occurred trying to update this application. Please try again later.", t);
+                Log.e(TAG, t.getMessage(), t);
+                onNetworkError(getString(R.string.network_error), t);
             }
         });
     }
@@ -307,10 +360,11 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
                 || Build.MODEL.equals("Element-Ti8")
                 || Build.MODEL.equals("Element Ti8")
                 || Build.MODEL.equalsIgnoreCase("ezstream-ti8")
+                || Build.MODEL.toLowerCase().contains("ti8")
                 || Build.MODEL.equals("Element Ti4 Mini"));
     }
 
-    private void enableButtons() {
+    protected void enableButtons() {
         nextButton.setEnabled(true);
     }
 
@@ -327,13 +381,13 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
     }
 
     protected void updateOrLaunchPlayer() {
-        progressDialog.show();
+        showProgressDialog();
         ApiProvider.getInstance().getSkinsData(new Callback<List<Skin>>() {
             @Override
             public void onResponse(Call<List<Skin>> call, Response<List<Skin>> response) {
                 List<Skin> result = response.body();
                 if (result == null) result = new ArrayList<>();
-                progressDialog.dismiss();
+                hideProgressDialog();
                 ArrayList<Skin> skins = new ArrayList<>();
                 for (Skin each : result) {
                     each.setUpToDate(playerInstaller.isSkinUpToDate(each));
@@ -349,16 +403,18 @@ public class DisclaimerActivity extends BaseActivity implements PlayerUpdaterAct
 
             @Override
             public void onFailure(Call<List<Skin>> call, Throwable t) {
-                onNetworkError("An error has occurred while cheding for add-on updates. Please try again later.", t);
+                onNetworkError(getString(R.string.network_error_2), t);
             }
         });
     }
 
     private void onNetworkError(String message, Throwable t) {
-        if (progressDialog != null) {
-            progressDialog.hide();
-        }
+        hideProgressDialog();
         Crashlytics.logException(t);
-        showErrorDialog("Error", message);
+        try {
+            showErrorDialog("Error", message);
+        } catch (Exception e) {
+            // can't show
+        }
     }
 }

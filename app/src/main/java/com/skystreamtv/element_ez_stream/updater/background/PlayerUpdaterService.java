@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.player.PlayerInstaller;
@@ -27,6 +29,7 @@ import com.skystreamtv.element_ez_stream.updater.utils.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,7 +37,6 @@ import java.lang.ref.WeakReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
 
 public class PlayerUpdaterService extends IntentService implements Files.ProgressListener {
 
@@ -45,16 +47,19 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     public static final int MSG_UPDATE_CANCELLED = 5;
     public static final int MSG_UPDATE_COMPLETED = 6;
     private static final String TAG = "PlayerUpdaterService";
-    private final Messenger service_messenger = new Messenger(new MessengerHandler(this));
-    public Messenger client;
-    private DownloadManager download_manager;
-    private long download_id;
-    private Skin skin;
-    private File PLAYER_CONF_DIRECTORY;
-    private String other_failure_reason;
-    private Status service_status = Status.NEW;
+    protected final Messenger service_messenger = new Messenger(new MessengerHandler(this));
+    protected DownloadManager download_manager;
+    protected long download_id;
+    protected Skin skin;
+    protected File PLAYER_CONF_DIRECTORY;
+    protected String other_failure_reason;
+    protected Status service_status = Status.NEW;
+    protected Messenger client;
+    protected int old_progress = 0;
     private boolean cleanInstall;
-    private int old_progress = 0;
+
+    private String downloadPath;
+
     public PlayerUpdaterService() {
         super("MadCastService");
     }
@@ -89,7 +94,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
         updateReady();
         this.download_manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(), "Android/data/"
-                + getString(R.string.player_id) + PLAYER_FILE_LOCATION);
+                + Constants.getPlayerId() + Constants.getPlayerFileLocation());
         this.skin = intent.getParcelableExtra(Constants.SKINS);
         service_status = Status.RUNNING;
         boolean result = doUpdate();
@@ -187,6 +192,7 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
         if (destination.exists() && !destination.delete())
             throw new IOException("Failed to remove old update download from storage. Please, contact our support");
         request.setDestinationInExternalFilesDir(this, null, "media_player_update.zip");
+        downloadPath = destination.getPath();
         return download_manager.enqueue(request);
     }
 
@@ -294,15 +300,33 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
             query.setFilterById(download_id);
             Cursor cursor = download_manager.query(query);
             cursor.moveToFirst();
-            @SuppressWarnings("deprecation") String zipFilePath = cursor.getString(cursor.getColumnIndex(
-                    DownloadManager.COLUMN_LOCAL_FILENAME));
 
-            Log.d(TAG, "Opening zip file stream: " + zipFilePath);
-            File zip_file = new File(zipFilePath);
+            File zip_file = null;
+            long max_bytes = 1;
+
+            if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                int fileUriIdx = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+                String fileUri = cursor.getString(fileUriIdx);
+                if (fileUri != null) {
+                    zip_file = new File(Uri.parse(fileUri).getPath());
+                    max_bytes = Double.valueOf(zip_file.length() * 1.3).longValue();
+                }
+            } else {
+                //noinspection deprecation
+                String zipFilePath = cursor.getString(cursor.getColumnIndex(
+                        DownloadManager.COLUMN_LOCAL_FILENAME));
+                zip_file = new File(zipFilePath);
+                max_bytes = Double.valueOf(zip_file.length() * 1.3).longValue();
+            }
+
+            if (zip_file == null) {
+                throw new FileNotFoundException("Zip file not found");
+            }
+
             ZipInputStream zip_stream = new ZipInputStream(new FileInputStream(zip_file));
             Log.d(TAG, "Zip file stream opened");
             download_manager.remove(download_id);
-            long max_bytes = Double.valueOf(zip_file.length() * 1.3).longValue();
+            Crashlytics.log("File size : " + max_bytes);
             long unzipped_bytes = 0;
             ZipEntry zip_entry;
             while ((zip_entry = zip_stream.getNextEntry()) != null) {
@@ -334,11 +358,13 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
             zip_stream.close();
             if (zip_file.exists() && !zip_file.delete())
                 Log.d(TAG, "Could not delete the update zip file.");
-            Log.e(TAG, "UnZip Done");
+            Log.d(TAG, "UnZip Done");
             return true;
-        } catch (IOException e) {
-            Log.d(TAG, "Error: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Error: " + e.getMessage(), e);
             other_failure_reason = getString(R.string.decompress_error_message);
+//            other_failure_reason = e.getMessage();
+            Crashlytics.logException(e);
             cancel();
             return false;
         }
@@ -347,14 +373,9 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
     protected boolean applyPlayerConfiguration() {
         Log.d(TAG, "Call applyPlayerConfiguration()");
         File unzipped_directory = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "media_player_update");
-        File addons_origin = new File(unzipped_directory, PLAYER_FILE_LOCATION + "/addons");
-        File userdata_origin = new File(unzipped_directory, PLAYER_FILE_LOCATION + "/userdata");
-        if (userdata_origin.exists()) {
-            Log.e(TAG, "Origin Directory");
-            for (File file : userdata_origin.listFiles()) {
-                Log.e("File: ", file.getName());
-            }
-        }
+        File addons_origin = new File(unzipped_directory, Constants.getPlayerFileLocation() + "/addons");
+        Log.e(TAG, addons_origin.getAbsolutePath());
+        File userdata_origin = new File(unzipped_directory, Constants.getPlayerFileLocation() + "/userdata");
         if (!(addons_origin.exists() && userdata_origin.exists())) {
             other_failure_reason = getString(R.string.update_incomplete);
             cancel();
@@ -382,7 +403,6 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
                 return false;
             }
         Log.d(TAG, "Player configuration directory exist.");
-
         if (cleanInstall) {
             if (!(addons_origin.renameTo(addons_destination) && userdata_origin.renameTo(userdata_destination))) {
                 other_failure_reason = getString(R.string.update_error_write);
@@ -399,7 +419,6 @@ public class PlayerUpdaterService extends IntentService implements Files.Progres
             }
             Log.d(TAG, "Update copied");
         }
-
 
         try {
             JsonWriter writer = new JsonWriter(new FileWriter(new File(PLAYER_CONF_DIRECTORY, "updater.inf")));

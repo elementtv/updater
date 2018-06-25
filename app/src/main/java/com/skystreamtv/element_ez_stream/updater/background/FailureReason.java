@@ -19,11 +19,11 @@ public class FailureReason implements Parcelable{
     };
     private String failure_reason = "";
 
-    public FailureReason(String failure_reason) {
+    FailureReason(String failure_reason) {
         this.failure_reason = failure_reason;
     }
 
-    protected FailureReason(Parcel in) {
+    private FailureReason(Parcel in) {
         this.failure_reason = in.readString();
     }
 

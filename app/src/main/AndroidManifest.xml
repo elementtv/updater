@@ -111,6 +111,16 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="3a9d89fe3fbb49780ce551de1b441dff9fd3fbf7"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.skystreamtv.element_ez_stream.updater.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

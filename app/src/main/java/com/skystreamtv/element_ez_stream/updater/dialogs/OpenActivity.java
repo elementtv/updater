@@ -1,8 +1,6 @@
 package com.skystreamtv.element_ez_stream.updater.dialogs;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,6 +8,7 @@ import android.view.View;
 import com.skystreamtv.element_ez_stream.updater.R;
 import com.skystreamtv.element_ez_stream.updater.ui.DisclaimerActivity;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 public class OpenActivity extends AppCompatActivity {
 
@@ -21,8 +20,7 @@ public class OpenActivity extends AppCompatActivity {
     }
 
     public void onNotNowClick(View v) {
-        SharedPreferences preferences = getSharedPreferences(Constants.UPDATER_PREFERENCES, Context.MODE_PRIVATE);
-        preferences.edit().putBoolean(Constants.FIRST_TIME_CONNECTED, false).apply();
+        PreferenceHelper.savePreference(this, Constants.FIRST_TIME_CONNECTED, false);
         finish();
     }
 
@@ -31,8 +29,7 @@ public class OpenActivity extends AppCompatActivity {
     }
 
     public void onYesClick(View v) {
-        SharedPreferences preferences = getSharedPreferences(Constants.UPDATER_PREFERENCES, Context.MODE_PRIVATE);
-        preferences.edit().putBoolean(Constants.FIRST_TIME_CONNECTED, false).apply();
+        PreferenceHelper.savePreference(this, Constants.FIRST_TIME_CONNECTED, false);
         startActivity(new Intent(this, DisclaimerActivity.class));
     }
 }

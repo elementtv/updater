@@ -1,6 +1,6 @@
 package com.skystreamtv.element_ez_stream.updater.player;
 
-import android.content.ActivityNotFoundException;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
-
 public class PlayerInstaller {
 
     private static final String TAG = "PlayerInstaller";
@@ -34,11 +32,11 @@ public class PlayerInstaller {
         this.context = context;
         this.package_manager = context.getPackageManager();
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
-                "Android/data/" + context.getString(R.string.player_id) + PLAYER_FILE_LOCATION);
+                "Android/data/" + Constants.getPlayerId() + Constants.getPlayerFileLocation());
     }
 
     public static void launchPlayer(Context context) {
-        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(context.getString(R.string.player_id));
+        Intent launch_intent = context.getPackageManager().getLaunchIntentForPackage(Constants.getPlayerId());
         launch_intent.addCategory(Intent.CATEGORY_LAUNCHER);
         launch_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(launch_intent);
@@ -50,28 +48,55 @@ public class PlayerInstaller {
 
     public boolean isPlayerInstalled() {
         try {
-            package_manager.getPackageInfo(context.getString(R.string.player_id), 0);
+            package_manager.getPackageInfo(Constants.getPlayerId(), 0);
             return true;
         } catch (PackageManager.NameNotFoundException e) {
+            //return PreferenceHelper.getPreference(context, CURRENT_KODI_VERSION, 18) > 18;
+            return  false;
+        }
+    }
+
+    public boolean isSPMCInstalled() {
+        try {
+            package_manager.getPackageInfo(Constants.SPMC_ID, 0);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }
 
     public void installPlayer(String kodiUrl) {
-        DisclaimerActivity disclaimer_activity = (DisclaimerActivity) context;
-        try {
-            Intent market_intent = new Intent(Intent.ACTION_VIEW);
-            market_intent.setData(Uri.parse(kodiUrl));
-            disclaimer_activity.startActivity(market_intent);
-        } catch (ActivityNotFoundException e) {
-            disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),
-                    context.getString(R.string.play_store_not_installed));
-        } catch (NullPointerException exception) {
-            disclaimer_activity.showErrorDialog(context.getString(R.string.something_went_wrong),
-                    context.getString(R.string.try_later_install));
-        }
+//        DisclaimerActivity disclaimer_activity = (DisclaimerActivity) context;
+//        try {
+//            Intent market_intent = new Intent(Intent.ACTION_VIEW);
+//            market_intent.setData(Uri.parse(kodiUrl));
+//            disclaimer_activity.startActivity(market_intent);
+//        } catch (ActivityNotFoundException e) {
+//            disclaimer_activity.showErrorDialog(context.getString(R.string.missing_play_store),
+//                    context.getString(R.string.play_store_not_installed));
+//        } catch (NullPointerException exception) {
+//            disclaimer_activity.showErrorDialog(context.getString(R.string.something_went_wrong),
+//                    context.getString(R.string.try_later_install));
+//        }
 
-        Toast.makeText(context, "Please wait Media Center media player is installing", Toast.LENGTH_SHORT).show();
+        performDownload(kodiUrl);
+        //Toast.makeText(context, "Please wait Media Center media player is installing", Toast.LENGTH_SHORT).show();
+    }
+
+    private void performDownload(String url) {
+        try {
+            Uri uri = Uri.parse(url);
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "mediaCenter.apk");
+            DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (downloadManager == null) throw new NullPointerException("Download Manager was null");
+            downloadManager.enqueue(request);
+            Toast.makeText(context, R.string.please_wait_install, Toast.LENGTH_SHORT).show();
+        } catch (NullPointerException e) {
+            DisclaimerActivity disclaimer_activity = (DisclaimerActivity) context;
+            disclaimer_activity.showErrorDialog(context.getString(R.string.something_went_wrong),
+                    e.getMessage());
+        }
     }
 
     private Skin getInstalledSkin() {
@@ -127,7 +152,8 @@ public class PlayerInstaller {
 
     public void isSkinMandatoryUpdate(Skin selectedSkin) {
         Skin installedSkin = getInstalledSkin();
-        Constants.MANDATORY_SKIN_UPDATE = installedSkin.getId() != selectedSkin.getId() || installedSkin.getVersion() < selectedSkin.getLast_mandatory_version();
+        Constants.MANDATORY_SKIN_UPDATE = installedSkin.getId() != selectedSkin.getId()
+                || installedSkin.getVersion() < selectedSkin.getLast_mandatory_version();
     }
 
     public boolean isSkinInstalled(Skin selectedSkin) {
@@ -136,7 +162,11 @@ public class PlayerInstaller {
         if (installedSkin.getId() == -1) {
             return installedSkin.getName().equals(selectedSkin.getName());
         } else if (selectedSkin.getId() > 2) {
-            return true;
+            try {
+                return PreferenceHelper.getPreference(context, String.valueOf(selectedSkin.getId()), true);
+            } catch (Exception e) {
+                return true;
+            }
         }
 
         return installedSkin.getId() == selectedSkin.getId();

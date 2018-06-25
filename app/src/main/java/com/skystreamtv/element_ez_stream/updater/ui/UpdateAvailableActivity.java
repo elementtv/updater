@@ -30,10 +30,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.skystreamtv.element_ez_stream.updater.utils.Constants.PLAYER_FILE_LOCATION;
-
 @SuppressWarnings("deprecation")
-public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate {
+public class UpdateAvailableActivity extends BaseActivity implements UpdateItemAdapter.DoUpdate, PlayerUpdaterActivity {
 
     private ProgressDialog progressDialog;
     private List<Skin> skins;
@@ -49,7 +47,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
                 .putContentName("Update/Install Kodi"));
 
         PLAYER_CONF_DIRECTORY = new File(Environment.getExternalStorageDirectory(),
-                "Android/data/" + getString(R.string.player_id) + PLAYER_FILE_LOCATION);
+                "Android/data/" + Constants.getPlayerId() + Constants.getPlayerFileLocation());
 
         playerInstaller = new PlayerInstaller(this);
 
@@ -71,7 +69,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("UpdateInfo", "OnActivityResult");
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Checking for Available Updates");
+        progressDialog.setMessage(getString(R.string.checking_update_text));
         ApiProvider.getInstance().getSkinsData(new Callback<List<Skin>>() {
             @Override
             public void onResponse(Call<List<Skin>> call, Response<List<Skin>> response) {
@@ -88,7 +86,7 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
 
             @Override
             public void onFailure(Call<List<Skin>> call, Throwable t) {
-                showErrorDialog(getResources().getString(R.string.github_error), "An Error has Occurred");
+                showErrorDialog(getResources().getString(R.string.github_error), getString(R.string.generic_error));
             }
         });
     }
@@ -144,5 +142,10 @@ public class UpdateAvailableActivity extends BaseActivity implements UpdateItemA
 
     private void isMandatory(Skin skin) {
         playerInstaller.isSkinMandatoryUpdate(skin);
+    }
+
+    @Override
+    public void errorAction(int action) {
+
     }
 }

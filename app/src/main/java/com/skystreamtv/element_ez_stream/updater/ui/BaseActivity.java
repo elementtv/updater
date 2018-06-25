@@ -2,6 +2,7 @@ package com.skystreamtv.element_ez_stream.updater.ui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
@@ -25,8 +26,11 @@ public class BaseActivity extends AppCompatActivity {
     static final int ERROR_ACTION_CLOSE_APP = 1;
     static final int ERROR_ACTION_NO_ACTION = 2;
 
+    protected ProgressDialog progressDialog;
+
     public void showErrorDialog(final String title, final String message) {
-        AlertDialog error_dialog = Dialogs.buildErrorDialog(this, title, message, ERROR_ACTION_CLOSE_APP);
+        AlertDialog error_dialog = Dialogs.buildErrorDialog(this,
+                title, message, ERROR_ACTION_CLOSE_APP);
         error_dialog.show();
         styleButton(error_dialog.getButton(DialogInterface.BUTTON_NEUTRAL));
     }
@@ -44,5 +48,22 @@ public class BaseActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void showProgressDialog() {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(this);
+        }
+        progressDialog.show();
+    }
+
+    public void hideProgressDialog() {
+        try {
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+        } catch (Exception e) {
+            // swallow exception
+        }
     }
 }

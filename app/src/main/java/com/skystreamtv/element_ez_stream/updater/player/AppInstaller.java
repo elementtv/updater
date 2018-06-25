@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.skystreamtv.element_ez_stream.updater.R;
+import com.skystreamtv.element_ez_stream.updater.model.Version;
+import com.skystreamtv.element_ez_stream.updater.network.ApiProvider;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
 import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
@@ -30,7 +34,6 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     private String downloadUrl;
 
     public void init(Context context, int kodiVersionBeingInstalled, String downloadUrl) {
-        Log.e("AppInstaller", "Init version: " + kodiVersionBeingInstalled);
         this.context = context;
         this.kodiVersionBeingInstalled = kodiVersionBeingInstalled;
         this.downloadUrl = downloadUrl;
@@ -57,10 +60,15 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        progressDialog.dismiss();
-        progressDialog.setProgress(0);
-        Log.e("AppInstaller", "Updating saved version to: " + kodiVersionBeingInstalled);
         PreferenceHelper.savePreference(context, Constants.CURRENT_KODI_VERSION, kodiVersionBeingInstalled);
+        Version version = new Version(kodiVersionBeingInstalled);
+        version.writeToFile();
+        try {
+            progressDialog.dismiss();
+            progressDialog.setProgress(0);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
     }
 
     @Override
@@ -95,10 +103,19 @@ public class AppInstaller extends AsyncTask<Void, Integer, Void> {
             fos.close();
             is.close();
             Log.d(TAG, "Closing file");
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(outputFile), "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
-            context.startActivity(intent);
+            if (ApiProvider.isOSVersion7()) {
+                Uri fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", outputFile);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                context.startActivity(intent);
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(outputFile), "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
+                context.startActivity(intent);
+            }
             Log.d(TAG, "DONE");
         } catch (Exception e) {
             e.printStackTrace();

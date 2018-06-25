@@ -24,6 +24,7 @@ import com.skystreamtv.element_ez_stream.updater.background.FailureReason;
 import com.skystreamtv.element_ez_stream.updater.background.PlayerUpdaterService;
 import com.skystreamtv.element_ez_stream.updater.model.Skin;
 import com.skystreamtv.element_ez_stream.updater.utils.Constants;
+import com.skystreamtv.element_ez_stream.updater.utils.PreferenceHelper;
 
 import java.lang.ref.WeakReference;
 
@@ -40,6 +41,7 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
     private TextView statusMessageTextView;
     private ProgressBar updateProgressBar;
     private Button retryButton;
+    private Skin skinToInstall;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,23 +80,23 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
             Log.d(TAG, "UpdateActivity.startServiceReset()");
             Intent startIntent = getIntent();
             Log.d(TAG, "Get skin");
-            Skin skin = startIntent.getParcelableExtra(Constants.SKINS);
+            skinToInstall = startIntent.getParcelableExtra(Constants.SKINS);
             boolean cleanInstall = startIntent.getBooleanExtra(Constants.CLEAN_INSTALL, false);
             Log.d(TAG, "Clean Install: " + cleanInstall);
-            setTitle(String.format(getString(R.string.updating_brand), skin.getName()));
+            setTitle(String.format(getString(R.string.updating_brand), skinToInstall.getName()));
             Log.d(TAG, "Reset view");
             resetView();
             Log.d(TAG, "Create service intent");
             Answers.getInstance().logCustom(new CustomEvent("Installing Ad-on")
-                    .putCustomAttribute("Name", skin.getName())
+                    .putCustomAttribute("Name", skinToInstall.getName())
                     .putCustomAttribute("Clean Install", "" + cleanInstall));
             Intent serviceIntent = new Intent(this, PlayerUpdaterService.class);
             serviceIntent.putExtra(Constants.SERVICE_RESET, startIntent.getBooleanExtra(Constants.SERVICE_RESET, retrying));
-            serviceIntent.putExtra(Constants.SKINS, skin);
+            serviceIntent.putExtra(Constants.SKINS, skinToInstall);
             serviceIntent.putExtra(Constants.CLEAN_INSTALL, cleanInstall);
             startService(serviceIntent);
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            Log.e(TAG, Log.getStackTraceString(e));
         }
     }
 
@@ -222,6 +224,9 @@ public class UpdateActivity extends BaseActivity implements PlayerUpdaterActivit
 
     public void updateDone() {
         Log.d("UpdateInfo", "Update Done");
+        if (skinToInstall != null && skinToInstall.getId() > -1) {
+            PreferenceHelper.savePreference(this, String.valueOf(skinToInstall.getId()), true);
+        }
         setResult(RESULT_OK);
         finish();
     }

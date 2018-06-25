@@ -57,7 +57,7 @@ public class SkinsActivity extends BaseActivity implements PlayerUpdaterActivity
         Log.d(TAG, "Call SkinsActivity.onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_skins);
-        Answers.getInstance().logContentView(new ContentViewEvent().putContentName("Add-Ons View"));
+        Answers.getInstance().logContentView(new ContentViewEvent().putContentName("Application View"));
         setTitle(getString(R.string.select_brand));
         progress_dialog = new ProgressDialog(this);
         progress_dialog.setMessage(getString(R.string.loading));
